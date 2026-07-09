@@ -345,15 +345,15 @@ cp .env.example .env
 Isi variabel dengan detail koneksi Supabase Anda. Karena Supabase menggunakan koneksi IPv6, untuk jaringan lokal IPv4 gunakan konfigurasi Connection Pooler Supabase sebagai berikut:
 ```env
 # Koneksi Transaction Pooler (Port 6543) untuk operasional runtime aplikasi
-DATABASE_URL="postgresql://postgres.lxqtgadlspplumbiqqwn:oksigen24medis@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+DATABASE_URL="postgresql://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
 
 # Koneksi Session Pooler (Port 5432) untuk melakukan eksekusi migrasi tabel
-DIRECT_URL="postgresql://postgres.lxqtgadlspplumbiqqwn:oksigen24medis@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres"
+DIRECT_URL="postgresql://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres"
 
 PORT=3000
 NODE_ENV=development
-JWT_SECRET="oxygen_rental_jwt_secret_key_2026_change_me"
-JWT_REFRESH_SECRET="oxygen_rental_jwt_refresh_secret_key_2026_change_me"
+JWT_SECRET="generate-a-secure-random-key"
+JWT_REFRESH_SECRET="generate-another-secure-random-key"
 ```
 
 ### 3. Menginstal Dependensi
