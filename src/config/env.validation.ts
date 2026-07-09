@@ -13,7 +13,7 @@ class EnvironmentVariables {
   NODE_ENV: Environment = Environment.Development;
 
   @IsNumber()
-  PORT = 3000;
+  PORT : number = 3000;
 
   @IsString()
   DATABASE_URL: string;

@@ -1,115 +1,424 @@
-# Oxygen Rental Management System - Backend REST API
+# Sistem Manajemen Rental Oksigen - Backend REST API
 
-This is the production-ready NestJS backend for the **Oxygen Rental Management System**. It features a robust, normalized database design using Prisma ORM, role-based access control (RBAC), and a unified **Stock Movement engine** as the single source of truth for physical inventory.
-
----
-
-## Technical Stack
-- **Framework**: NestJS (v11)
-- **Language**: TypeScript
-- **ORM**: Prisma (v6)
-- **Database**: PostgreSQL (Supabase Ready)
-- **Authentication**: JWT & Refresh Tokens with Passport
-- **Documentation**: Swagger API Specs
-- **Security**: Helmet, Throttler (Rate Limiting), ValidationPipe
-- **Performance**: Compression (Gzip)
-- **Containerization**: Docker & Docker Compose
+Ini adalah backend REST API berbasis **NestJS** untuk **Sistem Manajemen Rental Oksigen**. Aplikasi ini menggunakan **Prisma ORM** untuk pemetaan database PostgreSQL (Supabase), dilengkapi sistem kontrol akses berbasis peran (RBAC/Role-Based Access Control), serta **Stock Movement Engine** terpusat sebagai satu-satunya sumber kebenaran (Single Source of Truth) untuk inventaris barang dan tabung gas oksigen.
 
 ---
 
-## Directory Architecture
-The project is built using a feature-based architecture and adheres to the Controller-Service-Repository pattern:
+## 🏗️ Arsitektur Sistem & Alur Kerja
+
+Berikut adalah visualisasi alur request client saat melewati berbagai layer di NestJS hingga melakukan query ke database PostgreSQL:
+
+```mermaid
+graph TD
+    Client[HTTP Client / Postman / Dashboard] -->|Kirim Request| Route[Route Handlers]
+    Route --> Guard{Auth & Roles Guards}
+    Guard -->|Tidak Sah| Deny[401 / 403 Response]
+    Guard -->|Sah| Pipe[Validation Pipe]
+    Pipe -->|Data Tidak Valid| BadRequest[400 Bad Request]
+    Pipe --> Controller[Controllers Layer]
+    
+    subgraph NestJS Backend Layer
+        Controller --> Service[Services / Logika Bisnis]
+        Service --> Validation[Validasi Bisnis / Cek Stok & Status]
+        Validation --> Repository[Repositories / Layer Akses Data]
+        Repository --> Prisma[Prisma Client ORM]
+    end
+
+    Prisma -->|Pooled / Session Connections| Postgres[(PostgreSQL / Supabase)]
+    
+    Postgres -->|Kembalikan Data| Prisma
+    Prisma -->|Entities / Objek Data| Repository
+    Repository -->|DTOs / Data| Service
+    Service -->|Response Interceptor| Response[Format JSON Terpadu]
+    Response --> Client
+```
+
+---
+
+## 📊 Model Data & Relasi Database (ERD)
+
+Database dirancang dengan normalisasi tingkat tinggi untuk mencegah inkonsistensi data transaksi, keuangan, dan stok tabung. Berikut adalah ERD lengkap beserta tipe data dan foreign key constraint:
+
+```mermaid
+erDiagram
+    Role ||--o{ User : "memiliki"
+    User ||--o{ Rental : "membuat"
+    User ||--o{ Sale : "membuat"
+    User ||--o{ Purchase : "membuat"
+    User ||--o{ Expense : "mencatat"
+    User ||--o{ Income : "mencatat"
+    User ||--o{ StockMovement : "mencatat"
+    User ||--o{ ActivityLog : "mencatat"
+    
+    Customer ||--o{ Rental : "menyewa"
+    Customer ||--o{ Sale : "membeli"
+    Customer ||--o{ Cylinder : "memegang (jika disewa)"
+    
+    Vendor ||--o{ Purchase : "menyuplai"
+    Vendor ||--o{ Cylinder : "memegang (jika dikirim untuk isi ulang)"
+    
+    Category ||--o{ Product : "memiliki"
+    
+    Product ||--o{ SaleItem : "bagian dari"
+    Product ||--o{ PurchaseItem : "bagian dari"
+    Product ||--o{ StockMovement : "memiliki riwayat"
+    
+    OxygenType ||--o{ Cylinder : "mengisi"
+    
+    Cylinder ||--o{ RentalItem : "disewa dalam"
+    Cylinder ||--o{ StockMovement : "memiliki riwayat"
+    
+    Rental ||--o{ RentalItem : "memiliki item"
+    Sale ||--o{ SaleItem : "memiliki item"
+    Purchase ||--o{ PurchaseItem : "memiliki item"
+
+    User {
+        uuid id PK
+        string email UK
+        string passwordHash "password_hash"
+        string fullName "full_name"
+        uuid roleId FK "role_id"
+        boolean isActive "is_active"
+        string refreshTokenHash "refresh_token_hash"
+        datetime createdAt
+        datetime updatedAt
+        datetime deletedAt
+    }
+    Role {
+        uuid id PK
+        enum name UK "OWNER, ADMIN, FINANCE, WAREHOUSE"
+        string description
+        datetime createdAt
+        datetime updatedAt
+    }
+    Customer {
+        uuid id PK
+        string name
+        string phone
+        string email
+        string address
+        decimal balance
+        boolean isActive "is_active"
+        datetime createdAt
+        datetime updatedAt
+        datetime deletedAt
+    }
+    Vendor {
+        uuid id PK
+        string name
+        string phone
+        string email
+        string address
+        boolean isActive "is_active"
+        datetime createdAt
+        datetime updatedAt
+        datetime deletedAt
+    }
+    Category {
+        uuid id PK
+        string name UK
+        string description
+        boolean isActive "is_active"
+        datetime createdAt
+        datetime updatedAt
+        datetime deletedAt
+    }
+    Product {
+        uuid id PK
+        string name
+        string sku UK
+        string description
+        uuid categoryId FK "category_id"
+        decimal price
+        decimal cost
+        int currentStock "current_stock"
+        int minStock "min_stock"
+        boolean isActive "is_active"
+        datetime createdAt
+        datetime updatedAt
+        datetime deletedAt
+    }
+    OxygenType {
+        uuid id PK
+        string name UK
+        decimal purity
+        decimal pressure
+        string description
+        decimal pricePerUnit "price_per_unit"
+        boolean isActive "is_active"
+        datetime createdAt
+        datetime updatedAt
+        datetime deletedAt
+    }
+    Cylinder {
+        uuid id PK
+        string serialNumber UK "serial_number"
+        decimal capacity
+        string size
+        enum status "AVAILABLE, RENTED, AT_VENDOR, MAINTENANCE, EMPTY"
+        uuid oxygenTypeId FK "oxygen_type_id"
+        uuid customerId FK "customer_id"
+        uuid vendorId FK "vendor_id"
+        datetime createdAt
+        datetime updatedAt
+        datetime deletedAt
+    }
+    Rental {
+        uuid id PK
+        string invoiceNo UK "invoice_no"
+        uuid customerId FK "customer_id"
+        datetime startDate "start_date"
+        datetime dueDate "due_date"
+        datetime returnDate "return_date"
+        decimal totalAmount "total_amount"
+        decimal amountPaid "amount_paid"
+        string status "RENTING, RETURNED, OVERDUE"
+        string notes
+        uuid createdById FK "created_by_id"
+        datetime createdAt
+        datetime updatedAt
+        datetime deletedAt
+    }
+    RentalItem {
+        uuid id PK
+        uuid rentalId FK "rental_id"
+        uuid cylinderId FK "cylinder_id"
+        decimal price
+        datetime returnedAt "returned_at"
+        datetime createdAt
+        datetime updatedAt
+    }
+    Sale {
+        uuid id PK
+        string invoiceNo UK "invoice_no"
+        uuid customerId FK "customer_id"
+        decimal totalAmount "total_amount"
+        decimal amountPaid "amount_paid"
+        string paymentMethod "payment_method"
+        enum status "PAID, UNPAID, PARTIAL"
+        uuid createdById FK "created_by_id"
+        datetime createdAt
+        datetime updatedAt
+        datetime deletedAt
+    }
+    SaleItem {
+        uuid id PK
+        uuid saleId FK "sale_id"
+        uuid productId FK "product_id"
+        int quantity
+        decimal unitPrice "unit_price"
+        decimal subtotal
+        datetime createdAt
+        datetime updatedAt
+    }
+    Purchase {
+        uuid id PK
+        string invoiceNo UK "invoice_no"
+        uuid vendorId FK "vendor_id"
+        decimal totalAmount "total_amount"
+        decimal amountPaid "amount_paid"
+        enum status "PAID, UNPAID, PARTIAL"
+        uuid createdById FK "created_by_id"
+        datetime createdAt
+        datetime updatedAt
+        datetime deletedAt
+    }
+    PurchaseItem {
+        uuid id PK
+        uuid purchaseId FK "purchase_id"
+        uuid productId FK "product_id"
+        int quantity
+        decimal unitCost "unit_cost"
+        decimal subtotal
+        datetime createdAt
+        datetime updatedAt
+    }
+    Expense {
+        uuid id PK
+        string category
+        decimal amount
+        datetime date
+        string description
+        uuid createdById FK "created_by_id"
+        datetime createdAt
+        datetime updatedAt
+        datetime deletedAt
+    }
+    Income {
+        uuid id PK
+        string category
+        decimal amount
+        datetime date
+        string description
+        uuid createdById FK "created_by_id"
+        enum referenceType "RENTAL, RETURN, VENDOR_REFILL, SALE, PURCHASE"
+        uuid referenceId "reference_id"
+        datetime createdAt
+        datetime updatedAt
+        datetime deletedAt
+    }
+    StockMovement {
+        uuid id PK
+        enum type "IN, OUT, ADJUSTMENT"
+        enum referenceType "RENTAL, RETURN, VENDOR_REFILL, SALE, PURCHASE"
+        uuid referenceId "reference_id"
+        uuid productId FK "product_id"
+        uuid cylinderId FK "cylinder_id"
+        int quantity
+        int beforeStock "before_stock"
+        int afterStock "after_stock"
+        uuid createdById FK "created_by_id"
+        datetime createdAt
+    }
+    ActivityLog {
+        uuid id PK
+        uuid userId FK "user_id"
+        string action
+        string details
+        string ipAddress "ip_address"
+        datetime createdAt
+    }
+    CompanySetting {
+        uuid id PK
+        string key UK
+        string value
+        string description
+        datetime updatedAt
+    }
+```
+
+---
+
+## 🛠️ Fitur & Stack Teknologi
+
+* **Framework**: NestJS (v11) dengan arsitektur Modular & Repository Pattern.
+* **Database & ORM**: PostgreSQL (Supabase) dengan Prisma ORM (v6).
+* **Autentikasi**: JWT (Access Token & Refresh Token) menggunakan Passport.js.
+* **Keamanan**: Helmet (HTTP headers protection), Throttler (Rate limiting), & ValidationPipe (XSS & payload validation).
+* **Kinerja**: Gzip Compression untuk optimalisasi payload data.
+* **Dokumentasi**: Swagger API Interactive docs terintegrasi secara otomatis.
+
+---
+
+## 📂 Arsitektur Direktori
+
+Project ini dibagi berdasarkan modul fitur untuk skalabilitas tim dan kemudahan maintenance:
+
 ```
 src/
-├── auth/                  # Authentication endpoints (login, refresh, logout, change-password)
-├── users/                 # User management CRUD & Role mappings
-├── dashboard/             # Statistics aggregate API (KPIs, graphs, active rentals counts)
-├── inventory/             # Customers, Vendors, Products, Cylinders, and OxygenTypes CRUD
-├── transactions/          # Lease, Return, Refill, Sale, Restock + StockMovement logs
-├── finance/               # Incomes, Expenses, and Cash Flow summaries
-├── reports/               # Custom reporting API (date range aggregates, timeline charts)
-├── settings/              # Company configuration key-value store
-├── common/                # Shared filters, interceptors, decorators, guards, pagination DTOs
-├── config/                # Environment variables schema and validation
+├── auth/                  # Endpoint autentikasi (login, refresh token, logout, ganti password)
+├── users/                 # Manajemen pengguna (CRUD, Mapping Role, Status Aktif)
+├── dashboard/             # Agregasi data statistik dashboard (KPIs, grafik sewa aktif, dll)
+├── inventory/             # Modul CRUD Customer, Vendor, Product, Tabung Gas (Cylinder), & OxygenType
+├── transactions/          # Transaksi Sewa (Lease), Pengembalian, Isi Ulang, Penjualan, Restock, & StockMovement logs
+├── finance/               # Laporan Keuangan (Income, Expense, Ringkasan Arus Kas/Cash Flow)
+├── reports/               # API laporan kustom dengan rentang tanggal dan grafik historis
+├── settings/              # Konfigurasi perusahaan (Key-Value settings store)
+├── common/                # Filters, interceptors, decorators, guards, dan pagination DTOs global
+├── config/                # Validasi schema variabel lingkungan (.env validation)
 ├── database/              # Global PrismaService container
-└── main.ts                # App entrypoint and global middlewares
+└── main.ts                # Entrypoint aplikasi & inisialisasi middleware global
 ```
 
 ---
 
-## Database Design: Stock Movement Engine
-Unlike traditional architectures where rentals, sales, and refills exist as disconnected datasets, this system uses a **Stock Movement** center:
-- Every action (Rental, Return, Sale, Restock, Vendor Refill) writes a record into `StockMovement`.
-- This ensures 100% accurate historical stock tracing and makes audits effortless.
-- **Strict Validations**: Product stocks can never drop below zero. Cylinders must be in the `AVAILABLE` state to be leased.
+## ⚙️ Fitur Inti: Stock Movement Engine
+
+Sistem ini didesain agar data stok fisik tidak pernah salah atau mengalami inkonsistensi:
+* **Satu Sumber Kebenaran**: Setiap aksi fisik seperti Rental, Return, Sale, Restock, maupun Refill di vendor akan menulis riwayat pergerakan ke tabel `StockMovement`.
+* **Validasi Stok Ketat**: Stok produk reguler tidak boleh kurang dari nol.
+* **Aturan Status Tabung**: Tabung gas oksigen hanya bisa disewakan apabila sedang berstatus `AVAILABLE`. Status otomatis berubah menjadi `RENTED` setelah disewa, dan kembali `AVAILABLE` setelah dikembalikan.
 
 ---
 
-## Installation & Setup
+## 🚀 Instalasi & Konfigurasi
 
-### 1. Prerequisites
-- Node.js (v18 or v20+)
-- Docker (optional, for local PostgreSQL database)
+### 1. Prasyarat
+* Node.js (v18, v20, atau v22+)
+* npm / npx
 
-### 2. Configure Environment
-Clone the `.env.example` file to `.env`:
+### 2. Mengatur File Lingkungan (.env)
+Salin file contoh konfigurasi lingkungan:
 ```bash
 cp .env.example .env
 ```
-Ensure that the `DATABASE_URL` is set correctly. If you want to spin up a local PostgreSQL database using Docker, you can run:
-```bash
-docker-compose up -d
-```
-Then use the following connection string:
+Isi variabel dengan detail koneksi Supabase Anda. Karena Supabase menggunakan koneksi IPv6, untuk jaringan lokal IPv4 gunakan konfigurasi Connection Pooler Supabase sebagai berikut:
 ```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/oxygen_db?schema=public"
+# Koneksi Transaction Pooler (Port 6543) untuk operasional runtime aplikasi
+DATABASE_URL="postgresql://postgres.lxqtgadlspplumbiqqwn:oksigen24medis@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+
+# Koneksi Session Pooler (Port 5432) untuk melakukan eksekusi migrasi tabel
+DIRECT_URL="postgresql://postgres.lxqtgadlspplumbiqqwn:oksigen24medis@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres"
+
+PORT=3000
+NODE_ENV=development
+JWT_SECRET="oxygen_rental_jwt_secret_key_2026_change_me"
+JWT_REFRESH_SECRET="oxygen_rental_jwt_refresh_secret_key_2026_change_me"
 ```
 
-### 3. Install Dependencies
+### 3. Menginstal Dependensi
 ```bash
 npm install
 ```
 
-### 4. Database Setup & Seeding
-Run Prisma migrations to create the database schemas:
+### 4. Setup Database & Seeding
+Jalankan migrasi untuk menyinkronkan database dengan schema Prisma:
 ```bash
-npx prisma db push
+npx prisma migrate dev
 ```
-*(Note: Use `npx prisma migrate dev` in staging/production for official migration files)*.
 
-To populate the database with seed data (Default roles, Owner/Admin/Finance/Warehouse users, initial products, and cylinder records):
+Jalankan seeder untuk mengisi data awal (Default roles, user Owner/Admin/Finance/Warehouse, settings perusahaan, dan contoh data inventaris awal):
 ```bash
 npx prisma db seed
 ```
-**Seed User Logins (Password for all: `Password123!`):**
-- **Owner**: `owner@medis24.com`
-- **Admin**: `admin@medis24.com`
-- **Finance**: `finance@medis24.com`
-- **Warehouse**: `warehouse@medis24.com`
+
+**Informasi Login User Seeder (Password untuk semua: `Password123!`):**
+* **Owner**: `owner@medis24.com`
+* **Admin**: `admin@medis24.com`
+* **Finance**: `finance@medis24.com`
+* **Warehouse**: `warehouse@medis24.com`
 
 ---
 
-## Running the Application
+## 🏃 Menjalankan Aplikasi
 
 ```bash
-# Start in development (hot reload watch mode)
+# Mode development (live reload watch mode)
 npm run start:dev
 
-# Build compilation
+# Build versi produksi
 npm run build
 
-# Start in production mode
+# Menjalankan versi produksi
 npm run start:prod
 ```
 
-Once running, access the Interactive Swagger documentation at:
+Setelah aplikasi berjalan, buka dokumentasi Swagger interaktif di:
 **[http://localhost:3000/api/docs](http://localhost:3000/api/docs)**
 
 ---
 
-## Docker Execution
-To run the entire NestJS application and PostgreSQL container under Docker:
+## 📬 Postman Collection
+
+Kami telah menyediakan file Postman Collection siap pakai yang mencakup seluruh endpoint di root project Anda:
+* **[postman_collection.json](./postman_collection.json)**
+
+**Cara menggunakan:**
+1. Buka Postman dan klik **Import**.
+2. Pilih file `postman_collection.json` di root direktori ini.
+3. Buat environment variable baru di Postman:
+   * **Name**: `baseUrl`
+   * **Value**: `http://localhost:3000`
+
+---
+
+## 🐳 Eksekusi dengan Docker
+
+Untuk menjalankan seluruh backend API beserta container database PostgreSQL secara lokal menggunakan Docker:
 ```bash
+# Build image
 docker build -t oxygen-backend .
+
+# Jalankan container di background
 docker-compose up -d
 ```
