@@ -53,4 +53,8 @@ export class UpdateCustomerDto {
   @IsNumber()
   @IsOptional()
   balance?: number;
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  isActive?: boolean;
 }

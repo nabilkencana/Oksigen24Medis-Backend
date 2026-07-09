@@ -43,4 +43,8 @@ export class UpdateVendorDto {
   @IsString()
   @IsOptional()
   address?: string;
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  isActive?: boolean;
 }
