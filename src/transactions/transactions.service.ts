@@ -105,7 +105,7 @@ export class TransactionsService {
           data: {
             category: 'RENTAL_REVENUE',
             amount: amountPaid,
-            description: `Payment for rental invoice ${invoiceNo}`,
+            description: `Pembayaran invoice sewa ${invoiceNo}`,
             createdById: userId,
             referenceType: MovementReferenceType.RENTAL,
             referenceId: rental.id,
@@ -426,7 +426,7 @@ export class TransactionsService {
           data: {
             category: 'SALES_REVENUE',
             amount: amountPaid,
-            description: `Payment for sales invoice ${invoiceNo}`,
+            description: `Pembayaran invoice penjualan ${invoiceNo}`,
             createdById: userId,
             referenceType: MovementReferenceType.SALE,
             referenceId: sale.id,
