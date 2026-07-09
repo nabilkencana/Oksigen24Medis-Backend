@@ -1,0 +1,61 @@
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import helmet from 'helmet';
+import compression from 'compression';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  const configService = app.get(ConfigService);
+
+  // 1. Security HTTP Headers
+  app.use(helmet());
+
+  // 2. Enable CORS (Cross-Origin Resource Sharing)
+  app.enableCors({
+    origin: '*', // Adjust this to match your client domains in production
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
+
+  // 3. Compression for performance
+  app.use(compression());
+
+  // 4. Global Filters and Interceptors
+  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalInterceptors(new ResponseInterceptor());
+
+  // 5. Global Validation Pipe
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
+
+  // 6. Swagger API Documentation
+  const config = new DocumentBuilder()
+    .setTitle('Oxygen Rental Management System API')
+    .setDescription('Production-ready backend REST API for managing oxygen cylinder rentals, sales, purchase restocks, refills, stock movements, and financial statements.')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
+
+  const port = configService.get<number>('port') || 3000;
+  await app.listen(port);
+  console.log(`Application is running on: http://localhost:${port}`);
+  console.log(`Swagger Documentation is available at: http://localhost:${port}/api/docs`);
+}
+bootstrap();
