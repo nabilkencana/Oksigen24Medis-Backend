@@ -307,7 +307,7 @@ export class TransactionsService {
           data: {
             category: 'VENDOR_REFILL',
             amount: totalCost,
-            description: `Refill cost for ${dto.cylinderIds.length} cylinders from vendor`,
+            description: `Biaya isi ulang untuk ${dto.cylinderIds.length} tabung dari vendor`,
             createdById: userId,
           },
         });
@@ -548,7 +548,7 @@ export class TransactionsService {
           data: {
             category: 'PURCHASE',
             amount: amountPaid,
-            description: `Purchase of inventory restock under invoice ${invoiceNo}`,
+            description: `Pembelian restock inventaris dengan invoice ${invoiceNo}`,
             createdById: userId,
           },
         });
