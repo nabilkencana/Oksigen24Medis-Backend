@@ -107,6 +107,8 @@ async function main() {
   const oxygenTypes = [
     { name: 'Medical Oxygen 99.5%', purity: 99.50, pressure: 150.00, pricePerUnit: 75000.00, description: 'High purity medical grade oxygen' },
     { name: 'Industrial Oxygen 99.0%', purity: 99.00, pressure: 150.00, pricePerUnit: 50000.00, description: 'Industrial grade oxygen for welding & cutting' },
+    { name: 'Sewa Regulator Medis', purity: 0.00, pressure: 0.00, pricePerUnit: 35000.00, description: 'Sewa regulator oksigen medis standar' },
+    { name: 'Sewa Troli Tabung 1m3', purity: 0.00, pressure: 0.00, pricePerUnit: 20000.00, description: 'Sewa troli besi dorong tabung 1m3' },
   ];
 
   const dbOxygenTypes: any[] = [];
@@ -130,6 +132,11 @@ async function main() {
     { serialNumber: 'CYL-IND-001', capacity: 40.0, size: '6m3', status: CylinderStatus.AVAILABLE, oxygenTypeId: dbOxygenTypes[1].id },
     { serialNumber: 'CYL-IND-002', capacity: 40.0, size: '6m3', status: CylinderStatus.AT_VENDOR, oxygenTypeId: dbOxygenTypes[1].id, vendorId: dbVendors[0].id },
     { serialNumber: 'CYL-IND-003', capacity: 10.0, size: '1m3', status: CylinderStatus.MAINTENANCE, oxygenTypeId: dbOxygenTypes[1].id },
+    // Accessories represented as cylinders for rental tracking
+    { serialNumber: 'REG-NES-001', capacity: 0.0, size: 'Pcs', status: CylinderStatus.AVAILABLE, oxygenTypeId: dbOxygenTypes[2].id },
+    { serialNumber: 'REG-NES-002', capacity: 0.0, size: 'Pcs', status: CylinderStatus.AVAILABLE, oxygenTypeId: dbOxygenTypes[2].id },
+    { serialNumber: 'TRL-STL-001', capacity: 0.0, size: 'Pcs', status: CylinderStatus.AVAILABLE, oxygenTypeId: dbOxygenTypes[3].id },
+    { serialNumber: 'TRL-STL-002', capacity: 0.0, size: 'Pcs', status: CylinderStatus.AVAILABLE, oxygenTypeId: dbOxygenTypes[3].id },
   ];
 
   for (const cyl of cylinders) {
