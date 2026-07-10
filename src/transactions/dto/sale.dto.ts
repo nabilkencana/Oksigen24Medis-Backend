@@ -29,7 +29,7 @@ export class CreateSaleDto {
   @ApiPropertyOptional({ example: 'CASH' })
   @IsString()
   @IsOptional()
-  paymentMethod?: string = 'CASH';
+  paymentMethod?: string = 'TUNAI';
 
   @ApiProperty({ type: [SaleItemDto] })
   @IsArray()

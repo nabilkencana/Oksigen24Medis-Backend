@@ -255,7 +255,7 @@ async function main() {
       customerId: dbCustomers[0].id,
       totalAmount: 380000.0,
       amountPaid: 380000.0,
-      paymentMethod: 'CASH',
+      paymentMethod: 'TUNAI',
       status: PaymentStatus.PAID,
       createdById: creatorId,
       items: {
