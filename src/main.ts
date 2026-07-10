@@ -12,8 +12,11 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
 import helmet from 'helmet';
 import compression from 'compression';
 
+import { WsAdapter } from '@nestjs/platform-ws';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.useWebSocketAdapter(new WsAdapter(app));
 
   const configService = app.get(ConfigService);
 

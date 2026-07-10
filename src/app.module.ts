@@ -18,6 +18,7 @@ import { TransactionsModule } from './transactions/transactions.module';
 import { FinanceModule } from './finance/finance.module';
 import { ReportsModule } from './reports/reports.module';
 import { SettingsModule } from './settings/settings.module';
+import { RealtimeModule } from './common/realtime/realtime.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { SettingsModule } from './settings/settings.module';
     FinanceModule,
     ReportsModule,
     SettingsModule,
+    RealtimeModule,
   ],
 })
 export class AppModule {}
