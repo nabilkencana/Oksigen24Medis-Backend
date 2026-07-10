@@ -55,10 +55,10 @@ async function main() {
 
   // 3. Seed Company Settings
   const settings = [
-    { key: 'company_name', value: 'Oksigen 24 Medis', description: 'Name of the business' },
-    { key: 'company_phone', value: '+628123456789', description: 'Contact phone number' },
+    { key: 'company_name', value: 'Oksigen 24 Medis Tulungagung', description: 'Name of the business' },
+    { key: 'company_phone', value: '0858-6697-2209', description: 'Contact phone number' },
     { key: 'company_email', value: 'info@medis24.com', description: 'Contact email address' },
-    { key: 'company_address', value: 'Jl. Raya Medis No. 24, Jakarta, Indonesia', description: 'Physical store address' },
+    { key: 'company_address', value: 'Dusun Sembon, Sembon, Kec. Karangrejo, Kabupaten Tulungagung, Jawa Timur 66253', description: 'Physical store address' },
     { key: 'rental_deposit_fee', value: '200000', description: 'Standard deposit amount for renting a cylinder' },
     { key: 'overdue_penalty_per_day', value: '15000', description: 'Late return fee per cylinder per day' },
   ];
