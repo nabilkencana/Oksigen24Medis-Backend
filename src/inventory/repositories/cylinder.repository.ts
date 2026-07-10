@@ -50,7 +50,10 @@ export class CylinderRepository {
     });
   }
 
-  async update(id: string, data: Prisma.CylinderUpdateInput): Promise<Cylinder> {
+  async update(
+    id: string,
+    data: Prisma.CylinderUpdateInput,
+  ): Promise<Cylinder> {
     return this.prisma.cylinder.update({
       where: { id },
       data,

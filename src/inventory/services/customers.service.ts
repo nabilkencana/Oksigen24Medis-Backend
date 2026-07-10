@@ -12,7 +12,13 @@ export class CustomersService {
   }
 
   async findAll(paginationDto: PaginationDto) {
-    const { page = 1, limit = 10, search, sortBy = 'name', sortOrder = 'asc' } = paginationDto;
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      sortBy = 'name',
+      sortOrder = 'asc',
+    } = paginationDto;
     const skip = (page - 1) * limit;
 
     const where: any = {};

@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CylinderRepository } from '../repositories/cylinder.repository';
 import { OxygenTypeRepository } from '../repositories/oxygen-type.repository';
 import { CreateCylinderDto, UpdateCylinderDto } from '../dto/cylinder.dto';
@@ -12,14 +16,22 @@ export class CylindersService {
   ) {}
 
   async create(dto: CreateCylinderDto) {
-    const existing = await this.cylinderRepository.findBySerialNumber(dto.serialNumber);
+    const existing = await this.cylinderRepository.findBySerialNumber(
+      dto.serialNumber,
+    );
     if (existing) {
-      throw new ConflictException(`Cylinder with serial number ${dto.serialNumber} already exists`);
+      throw new ConflictException(
+        `Cylinder with serial number ${dto.serialNumber} already exists`,
+      );
     }
 
-    const oxygenType = await this.oxygenTypeRepository.findById(dto.oxygenTypeId);
+    const oxygenType = await this.oxygenTypeRepository.findById(
+      dto.oxygenTypeId,
+    );
     if (!oxygenType) {
-      throw new NotFoundException(`OxygenType with ID ${dto.oxygenTypeId} not found`);
+      throw new NotFoundException(
+        `OxygenType with ID ${dto.oxygenTypeId} not found`,
+      );
     }
 
     const createData: any = {
@@ -37,7 +49,13 @@ export class CylindersService {
   }
 
   async findAll(paginationDto: PaginationDto) {
-    const { page = 1, limit = 10, search, sortBy = 'serialNumber', sortOrder = 'asc' } = paginationDto;
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      sortBy = 'serialNumber',
+      sortOrder = 'asc',
+    } = paginationDto;
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -82,16 +100,24 @@ export class CylindersService {
     const updateData: any = { ...dto };
 
     if (dto.serialNumber) {
-      const existing = await this.cylinderRepository.findBySerialNumber(dto.serialNumber);
+      const existing = await this.cylinderRepository.findBySerialNumber(
+        dto.serialNumber,
+      );
       if (existing && existing.id !== id) {
-        throw new ConflictException(`Serial number ${dto.serialNumber} already in use by another cylinder`);
+        throw new ConflictException(
+          `Serial number ${dto.serialNumber} already in use by another cylinder`,
+        );
       }
     }
 
     if (dto.oxygenTypeId) {
-      const oxygenType = await this.oxygenTypeRepository.findById(dto.oxygenTypeId);
+      const oxygenType = await this.oxygenTypeRepository.findById(
+        dto.oxygenTypeId,
+      );
       if (!oxygenType) {
-        throw new NotFoundException(`OxygenType with ID ${dto.oxygenTypeId} not found`);
+        throw new NotFoundException(
+          `OxygenType with ID ${dto.oxygenTypeId} not found`,
+        );
       }
       delete updateData.oxygenTypeId;
       updateData.oxygenType = { connect: { id: dto.oxygenTypeId } };

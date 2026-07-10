@@ -1,5 +1,18 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { TransactionsService } from './transactions.service';
 import { CreateRentalDto, ReturnRentalDto } from './dto/rental.dto';
 import { SendToVendorDto, ReceiveFromVendorDto } from './dto/vendor-refill.dto';
@@ -22,29 +35,45 @@ export class TransactionsController {
   @Post('rentals')
   @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.WAREHOUSE)
   @ApiOperation({ summary: 'Create new cylinder rental' })
-  @ApiResponse({ status: 201, description: 'Rental invoice created successfully.' })
-  createRental(@Body() dto: CreateRentalDto, @CurrentUser('id') userId: string) {
+  @ApiResponse({
+    status: 201,
+    description: 'Rental invoice created successfully.',
+  })
+  createRental(
+    @Body() dto: CreateRentalDto,
+    @CurrentUser('id') userId: string,
+  ) {
     return this.transactionsService.createRental(dto, userId);
   }
 
   @Post('rentals/:id/return')
   @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.WAREHOUSE)
   @ApiOperation({ summary: 'Process cylinder return for a rental' })
-  returnRental(@Param('id') id: string, @Body() dto: ReturnRentalDto, @CurrentUser('id') userId: string) {
+  returnRental(
+    @Param('id') id: string,
+    @Body() dto: ReturnRentalDto,
+    @CurrentUser('id') userId: string,
+  ) {
     return this.transactionsService.returnRental(id, dto, userId);
   }
 
   @Post('refills/send')
   @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.WAREHOUSE)
   @ApiOperation({ summary: 'Send empty cylinders to a vendor for refill' })
-  sendToVendor(@Body() dto: SendToVendorDto, @CurrentUser('id') userId: string) {
+  sendToVendor(
+    @Body() dto: SendToVendorDto,
+    @CurrentUser('id') userId: string,
+  ) {
     return this.transactionsService.sendToVendor(dto, userId);
   }
 
   @Post('refills/receive')
   @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.WAREHOUSE)
   @ApiOperation({ summary: 'Receive filled cylinders back from a vendor' })
-  receiveFromVendor(@Body() dto: ReceiveFromVendorDto, @CurrentUser('id') userId: string) {
+  receiveFromVendor(
+    @Body() dto: ReceiveFromVendorDto,
+    @CurrentUser('id') userId: string,
+  ) {
     return this.transactionsService.receiveFromVendor(dto, userId);
   }
 
@@ -57,8 +86,13 @@ export class TransactionsController {
 
   @Post('purchases')
   @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.WAREHOUSE)
-  @ApiOperation({ summary: 'Process a supplier purchase (restocking products)' })
-  createPurchase(@Body() dto: CreatePurchaseDto, @CurrentUser('id') userId: string) {
+  @ApiOperation({
+    summary: 'Process a supplier purchase (restocking products)',
+  })
+  createPurchase(
+    @Body() dto: CreatePurchaseDto,
+    @CurrentUser('id') userId: string,
+  ) {
     return this.transactionsService.createPurchase(dto, userId);
   }
 

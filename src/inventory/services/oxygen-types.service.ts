@@ -1,6 +1,13 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { OxygenTypeRepository } from '../repositories/oxygen-type.repository';
-import { CreateOxygenTypeDto, UpdateOxygenTypeDto } from '../dto/oxygen-type.dto';
+import {
+  CreateOxygenTypeDto,
+  UpdateOxygenTypeDto,
+} from '../dto/oxygen-type.dto';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 
 @Injectable()
@@ -16,7 +23,13 @@ export class OxygenTypesService {
   }
 
   async findAll(paginationDto: PaginationDto) {
-    const { page = 1, limit = 10, search, sortBy = 'name', sortOrder = 'asc' } = paginationDto;
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      sortBy = 'name',
+      sortOrder = 'asc',
+    } = paginationDto;
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -60,7 +73,9 @@ export class OxygenTypesService {
     if (dto.name) {
       const existing = await this.oxygenTypeRepository.findByName(dto.name);
       if (existing && existing.id !== id) {
-        throw new ConflictException('Oxygen type with this name already exists');
+        throw new ConflictException(
+          'Oxygen type with this name already exists',
+        );
       }
     }
 

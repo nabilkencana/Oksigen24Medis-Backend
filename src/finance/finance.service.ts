@@ -32,7 +32,15 @@ export class FinanceService {
   }
 
   async findAllExpenses(queryDto: FinanceQueryDto) {
-    const { page = 1, limit = 10, search, sortBy = 'date', sortOrder = 'desc', startDate, endDate } = queryDto;
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      sortBy = 'date',
+      sortOrder = 'desc',
+      startDate,
+      endDate,
+    } = queryDto;
     const skip = (page - 1) * limit;
 
     const where: any = { deletedAt: null };
@@ -74,7 +82,15 @@ export class FinanceService {
   }
 
   async findAllIncomes(queryDto: FinanceQueryDto) {
-    const { page = 1, limit = 10, search, sortBy = 'date', sortOrder = 'desc', startDate, endDate } = queryDto;
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      sortBy = 'date',
+      sortOrder = 'desc',
+      startDate,
+      endDate,
+    } = queryDto;
     const skip = (page - 1) * limit;
 
     const where: any = { deletedAt: null };

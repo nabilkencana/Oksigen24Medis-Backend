@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CategoryRepository } from '../repositories/category.repository';
 import { CreateCategoryDto, UpdateCategoryDto } from '../dto/category.dto';
 import { PaginationDto } from '../../common/dto/pagination.dto';
@@ -16,7 +20,13 @@ export class CategoriesService {
   }
 
   async findAll(paginationDto: PaginationDto) {
-    const { page = 1, limit = 10, search, sortBy = 'name', sortOrder = 'asc' } = paginationDto;
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      sortBy = 'name',
+      sortOrder = 'asc',
+    } = paginationDto;
     const skip = (page - 1) * limit;
 
     const where: any = {};

@@ -21,7 +21,7 @@ export class UsersRepository {
     orderBy?: Prisma.UserOrderByWithRelationInput;
   }): Promise<{ users: User[]; total: number }> {
     const { skip, take, cursor, where, orderBy } = params;
-    
+
     // Ensure we only query non-deleted records by default unless specified
     const baseWhere = { deletedAt: null, ...where };
 

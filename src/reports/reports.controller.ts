@@ -1,5 +1,10 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ReportsService } from './reports.service';
 import { ReportQueryDto } from './dto/report-query.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -16,7 +21,10 @@ export class ReportsController {
 
   @Get('revenue')
   @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.FINANCE)
-  @ApiOperation({ summary: 'Get revenue report details', description: 'Returns timeline and category aggregates for incomes.' })
+  @ApiOperation({
+    summary: 'Get revenue report details',
+    description: 'Returns timeline and category aggregates for incomes.',
+  })
   @ApiResponse({ status: 200, description: 'Revenue report generated.' })
   getRevenueReport(@Query() query: ReportQueryDto) {
     return this.reportsService.getRevenueReport(query);
@@ -24,7 +32,10 @@ export class ReportsController {
 
   @Get('rentals')
   @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.FINANCE, UserRole.WAREHOUSE)
-  @ApiOperation({ summary: 'Get cylinder rental report', description: 'Lease lists and stats.' })
+  @ApiOperation({
+    summary: 'Get cylinder rental report',
+    description: 'Lease lists and stats.',
+  })
   getRentalReport(@Query() query: ReportQueryDto) {
     return this.reportsService.getRentalReport(query);
   }

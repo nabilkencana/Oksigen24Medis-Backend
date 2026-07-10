@@ -1,5 +1,10 @@
 import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { FinanceService } from './finance.service';
 import { CreateExpenseDto, CreateIncomeDto } from './dto/finance.dto';
 import { FinanceQueryDto } from './dto/finance-query.dto';
@@ -19,13 +24,19 @@ export class FinanceController {
 
   @Post('expenses')
   @ApiOperation({ summary: 'Create a new expense entry' })
-  createExpense(@Body() dto: CreateExpenseDto, @CurrentUser('id') userId: string) {
+  createExpense(
+    @Body() dto: CreateExpenseDto,
+    @CurrentUser('id') userId: string,
+  ) {
     return this.financeService.createExpense(dto, userId);
   }
 
   @Post('incomes')
   @ApiOperation({ summary: 'Create a new manual income entry' })
-  createIncome(@Body() dto: CreateIncomeDto, @CurrentUser('id') userId: string) {
+  createIncome(
+    @Body() dto: CreateIncomeDto,
+    @CurrentUser('id') userId: string,
+  ) {
     return this.financeService.createIncome(dto, userId);
   }
 

@@ -7,7 +7,9 @@ import {
 import { Server, WebSocket } from 'ws';
 
 @WebSocketGateway()
-export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class RealtimeGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
 
@@ -16,7 +18,12 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   handleConnection(client: WebSocket) {
     this.clients.add(client);
     console.log('[WS] Client connected. Total clients:', this.clients.size);
-    client.send(JSON.stringify({ event: 'welcome', payload: 'Connected to Realtime Gateway' }));
+    client.send(
+      JSON.stringify({
+        event: 'welcome',
+        payload: 'Connected to Realtime Gateway',
+      }),
+    );
   }
 
   handleDisconnect(client: WebSocket) {

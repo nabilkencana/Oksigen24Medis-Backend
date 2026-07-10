@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator';
+import {
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Min,
+} from 'class-validator';
 
 export class CreateProductDto {
   @ApiProperty({ example: 'Nesco Oxygen Regulator' })
@@ -12,7 +20,9 @@ export class CreateProductDto {
   @IsNotEmpty()
   sku: string;
 
-  @ApiPropertyOptional({ example: 'Medical grade regulator with humidifier bottle' })
+  @ApiPropertyOptional({
+    example: 'Medical grade regulator with humidifier bottle',
+  })
   @IsString()
   @IsOptional()
   description?: string;
@@ -56,7 +66,9 @@ export class UpdateProductDto {
   @IsOptional()
   sku?: string;
 
-  @ApiPropertyOptional({ example: 'Medical grade regulator with humidifier bottle' })
+  @ApiPropertyOptional({
+    example: 'Medical grade regulator with humidifier bottle',
+  })
   @IsString()
   @IsOptional()
   description?: string;

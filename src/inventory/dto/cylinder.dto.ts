@@ -1,6 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { CylinderStatus } from '@prisma/client';
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Min,
+} from 'class-validator';
 
 export class CreateCylinderDto {
   @ApiProperty({ example: 'CYL-MED-001' })
@@ -18,7 +26,10 @@ export class CreateCylinderDto {
   @IsNotEmpty()
   size: string;
 
-  @ApiPropertyOptional({ enum: CylinderStatus, default: CylinderStatus.AVAILABLE })
+  @ApiPropertyOptional({
+    enum: CylinderStatus,
+    default: CylinderStatus.AVAILABLE,
+  })
   @IsEnum(CylinderStatus)
   @IsOptional()
   status?: CylinderStatus = CylinderStatus.AVAILABLE;

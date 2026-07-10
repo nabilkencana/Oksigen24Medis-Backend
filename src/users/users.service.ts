@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UsersRepository } from './users.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -14,7 +18,9 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const existing = await this.usersRepository.findByEmail(createUserDto.email);
+    const existing = await this.usersRepository.findByEmail(
+      createUserDto.email,
+    );
     if (existing) {
       throw new ConflictException('Email already registered');
     }
@@ -25,7 +31,9 @@ export class UsersService {
     });
 
     if (!roleRecord) {
-      throw new NotFoundException(`Role ${createUserDto.role} not found in system`);
+      throw new NotFoundException(
+        `Role ${createUserDto.role} not found in system`,
+      );
     }
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
@@ -44,7 +52,13 @@ export class UsersService {
   }
 
   async findAll(paginationDto: PaginationDto) {
-    const { page = 1, limit = 10, search, sortBy = 'createdAt', sortOrder = 'desc' } = paginationDto;
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = paginationDto;
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -97,10 +111,13 @@ export class UsersService {
 
     const updateData: any = {};
     if (updateUserDto.fullName) updateData.fullName = updateUserDto.fullName;
-    if (updateUserDto.isActive !== undefined) updateData.isActive = updateUserDto.isActive;
+    if (updateUserDto.isActive !== undefined)
+      updateData.isActive = updateUserDto.isActive;
 
     if (updateUserDto.email) {
-      const existing = await this.usersRepository.findByEmail(updateUserDto.email);
+      const existing = await this.usersRepository.findByEmail(
+        updateUserDto.email,
+      );
       if (existing && existing.id !== id) {
         throw new ConflictException('Email already in use by another user');
       }
@@ -122,7 +139,11 @@ export class UsersService {
     }
 
     const updatedUser = await this.usersRepository.update(id, updateData);
-    const { passwordHash: _, refreshTokenHash: __, ...result } = updatedUser as any;
+    const {
+      passwordHash: _,
+      refreshTokenHash: __,
+      ...result
+    } = updatedUser as any;
     return result;
   }
 

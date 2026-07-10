@@ -1,11 +1,20 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { CreateRentalDto, ReturnRentalDto } from './dto/rental.dto';
 import { SendToVendorDto, ReceiveFromVendorDto } from './dto/vendor-refill.dto';
 import { CreateSaleDto } from './dto/sale.dto';
 import { CreatePurchaseDto } from './dto/purchase.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
-import { CylinderStatus, MovementType, MovementReferenceType, PaymentStatus } from '@prisma/client';
+import {
+  CylinderStatus,
+  MovementType,
+  MovementReferenceType,
+  PaymentStatus,
+} from '@prisma/client';
 
 @Injectable()
 export class TransactionsService {
@@ -38,7 +47,9 @@ export class TransactionsService {
 
       for (const cyl of cylinders) {
         if (cyl.status !== CylinderStatus.AVAILABLE) {
-          throw new BadRequestException(`Cylinder ${cyl.serialNumber} is not AVAILABLE (Current status: ${cyl.status})`);
+          throw new BadRequestException(
+            `Cylinder ${cyl.serialNumber} is not AVAILABLE (Current status: ${cyl.status})`,
+          );
         }
       }
 
@@ -93,7 +104,7 @@ export class TransactionsService {
             cylinderId: cyl.id,
             quantity: 1,
             beforeStock: 1, // Available in warehouse before
-            afterStock: 0,  // Checked out now
+            afterStock: 0, // Checked out now
             createdById: userId,
           },
         });
@@ -145,10 +156,12 @@ export class TransactionsService {
       if (!rental) throw new NotFoundException('Rental not found');
 
       // 2. Validate returned cylinders are part of this rental
-      const rentalCylinderIds = rental.items.map(item => item.cylinderId);
+      const rentalCylinderIds = rental.items.map((item) => item.cylinderId);
       for (const returnedId of dto.cylinderIds) {
         if (!rentalCylinderIds.includes(returnedId)) {
-          throw new BadRequestException(`Cylinder ${returnedId} is not part of this rental`);
+          throw new BadRequestException(
+            `Cylinder ${returnedId} is not part of this rental`,
+          );
         }
       }
 
@@ -199,7 +212,10 @@ export class TransactionsService {
         });
       }
 
-      return { message: 'Cylinders returned successfully', status: updatedRentalStatus };
+      return {
+        message: 'Cylinders returned successfully',
+        status: updatedRentalStatus,
+      };
     });
   }
 
@@ -225,7 +241,9 @@ export class TransactionsService {
 
       for (const cyl of cylinders) {
         if (cyl.status !== CylinderStatus.EMPTY) {
-          throw new BadRequestException(`Cylinder ${cyl.serialNumber} is not EMPTY (Current status: ${cyl.status})`);
+          throw new BadRequestException(
+            `Cylinder ${cyl.serialNumber} is not EMPTY (Current status: ${cyl.status})`,
+          );
         }
       }
 
@@ -271,7 +289,9 @@ export class TransactionsService {
 
       for (const cyl of cylinders) {
         if (cyl.status !== CylinderStatus.AT_VENDOR) {
-          throw new BadRequestException(`Cylinder ${cyl.serialNumber} is not at vendor (Current status: ${cyl.status})`);
+          throw new BadRequestException(
+            `Cylinder ${cyl.serialNumber} is not at vendor (Current status: ${cyl.status})`,
+          );
         }
       }
 
@@ -331,7 +351,7 @@ export class TransactionsService {
       }
 
       // Fetch all products
-      const productIds = dto.items.map(item => item.productId);
+      const productIds = dto.items.map((item) => item.productId);
       const products = await tx.product.findMany({
         where: { id: { in: productIds }, deletedAt: null },
       });
@@ -340,16 +360,19 @@ export class TransactionsService {
         throw new BadRequestException('Some products not found');
       }
 
-      const productMap = new Map(products.map(p => [p.id, p]));
+      const productMap = new Map(products.map((p) => [p.id, p]));
       let totalAmount = 0;
 
       // 1. Validate Product stocks (cannot become negative!)
       const saleItemsData = dto.items.map((item) => {
         const prod = productMap.get(item.productId);
-        if (!prod) throw new NotFoundException(`Product ${item.productId} not mapped`);
+        if (!prod)
+          throw new NotFoundException(`Product ${item.productId} not mapped`);
 
         if (prod.currentStock < item.quantity) {
-          throw new BadRequestException(`Insufficient stock for product ${prod.name} (Available: ${prod.currentStock}, Requested: ${item.quantity})`);
+          throw new BadRequestException(
+            `Insufficient stock for product ${prod.name} (Available: ${prod.currentStock}, Requested: ${item.quantity})`,
+          );
         }
 
         const price = Number(prod.price);
@@ -460,7 +483,7 @@ export class TransactionsService {
       if (!vendor) throw new NotFoundException('Vendor not found');
 
       // Fetch all products
-      const productIds = dto.items.map(item => item.productId);
+      const productIds = dto.items.map((item) => item.productId);
       const products = await tx.product.findMany({
         where: { id: { in: productIds }, deletedAt: null },
       });
@@ -469,12 +492,13 @@ export class TransactionsService {
         throw new BadRequestException('Some products not found');
       }
 
-      const productMap = new Map(products.map(p => [p.id, p]));
+      const productMap = new Map(products.map((p) => [p.id, p]));
       let totalAmount = 0;
 
       const purchaseItemsData = dto.items.map((item) => {
         const prod = productMap.get(item.productId);
-        if (!prod) throw new NotFoundException(`Product ${item.productId} not mapped`);
+        if (!prod)
+          throw new NotFoundException(`Product ${item.productId} not mapped`);
 
         const subtotal = item.unitCost * item.quantity;
         totalAmount += subtotal;
@@ -562,7 +586,13 @@ export class TransactionsService {
   // QUERY ENDPOINTS
   // ==========================================
   async findAllRentals(paginationDto: PaginationDto) {
-    const { page = 1, limit = 10, search, sortBy = 'createdAt', sortOrder = 'desc' } = paginationDto;
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = paginationDto;
     const skip = (page - 1) * limit;
 
     const where: any = { deletedAt: null };
@@ -597,14 +627,18 @@ export class TransactionsService {
   }
 
   async findAllSales(paginationDto: PaginationDto) {
-    const { page = 1, limit = 10, search, sortBy = 'createdAt', sortOrder = 'desc' } = paginationDto;
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = paginationDto;
     const skip = (page - 1) * limit;
 
     const where: any = { deletedAt: null };
     if (search) {
-      where.OR = [
-        { invoiceNo: { contains: search, mode: 'insensitive' } },
-      ];
+      where.OR = [{ invoiceNo: { contains: search, mode: 'insensitive' } }];
     }
 
     const [items, total] = await this.prisma.$transaction([
@@ -631,14 +665,18 @@ export class TransactionsService {
   }
 
   async findAllPurchases(paginationDto: PaginationDto) {
-    const { page = 1, limit = 10, search, sortBy = 'createdAt', sortOrder = 'desc' } = paginationDto;
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = paginationDto;
     const skip = (page - 1) * limit;
 
     const where: any = { deletedAt: null };
     if (search) {
-      where.OR = [
-        { invoiceNo: { contains: search, mode: 'insensitive' } },
-      ];
+      where.OR = [{ invoiceNo: { contains: search, mode: 'insensitive' } }];
     }
 
     const [items, total] = await this.prisma.$transaction([
@@ -665,14 +703,18 @@ export class TransactionsService {
   }
 
   async findAllStockMovements(paginationDto: PaginationDto) {
-    const { page = 1, limit = 10, search, sortBy = 'createdAt', sortOrder = 'desc' } = paginationDto;
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = paginationDto;
     const skip = (page - 1) * limit;
 
     const where: any = {};
     if (search) {
-      where.OR = [
-        { referenceType: { equals: search.toUpperCase() as any } },
-      ];
+      where.OR = [{ referenceType: { equals: search.toUpperCase() as any } }];
     }
 
     const [items, total] = await this.prisma.$transaction([

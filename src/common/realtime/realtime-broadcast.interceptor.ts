@@ -21,10 +21,15 @@ export class RealtimeBroadcastInterceptor implements NestInterceptor {
       tap(() => {
         if (method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
           // Exclude auth login/register endpoints to avoid redundant noise
-          if (req.url.includes('/auth/login') || req.url.includes('/auth/register')) {
+          if (
+            req.url.includes('/auth/login') ||
+            req.url.includes('/auth/register')
+          ) {
             return;
           }
-          console.log(`[WS-Broadcast] Broadcast triggered by ${method} ${req.url}`);
+          console.log(
+            `[WS-Broadcast] Broadcast triggered by ${method} ${req.url}`,
+          );
           this.realtimeGateway.broadcast('db_change', {
             method,
             url: req.url,

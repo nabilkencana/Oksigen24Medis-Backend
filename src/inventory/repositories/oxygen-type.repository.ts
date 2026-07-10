@@ -44,7 +44,10 @@ export class OxygenTypeRepository {
     });
   }
 
-  async update(id: string, data: Prisma.OxygenTypeUpdateInput): Promise<OxygenType> {
+  async update(
+    id: string,
+    data: Prisma.OxygenTypeUpdateInput,
+  ): Promise<OxygenType> {
     return this.prisma.oxygenType.update({
       where: { id },
       data,

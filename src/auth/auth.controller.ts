@@ -1,5 +1,20 @@
-import { Controller, Post, UseGuards, Req, Body, Get, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Controller,
+  Post,
+  UseGuards,
+  Req,
+  Body,
+  Get,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -16,7 +31,11 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Login user', description: 'Authenticate using email and password. Returns access and refresh tokens.' })
+  @ApiOperation({
+    summary: 'Login user',
+    description:
+      'Authenticate using email and password. Returns access and refresh tokens.',
+  })
   @ApiBody({ type: LoginDto })
   @ApiResponse({ status: 200, description: 'Authentication successful.' })
   @ApiResponse({ status: 401, description: 'Invalid credentials.' })
@@ -28,7 +47,10 @@ export class AuthController {
   @Post('refresh')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Refresh JWT token', description: 'Pass the refresh token in Authorization Bearer header.' })
+  @ApiOperation({
+    summary: 'Refresh JWT token',
+    description: 'Pass the refresh token in Authorization Bearer header.',
+  })
   @ApiResponse({ status: 200, description: 'Tokens successfully refreshed.' })
   @ApiResponse({ status: 403, description: 'Invalid refresh token.' })
   async refresh(@CurrentUser() user: any) {
@@ -39,7 +61,10 @@ export class AuthController {
   @Post('logout')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Logout user', description: 'Invalidates user refresh token session.' })
+  @ApiOperation({
+    summary: 'Logout user',
+    description: 'Invalidates user refresh token session.',
+  })
   @ApiResponse({ status: 200, description: 'Logout successful.' })
   async logout(@CurrentUser('id') userId: string) {
     return this.authService.logout(userId);
@@ -48,7 +73,10 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get current user information', description: 'Returns details of logged-in user.' })
+  @ApiOperation({
+    summary: 'Get current user information',
+    description: 'Returns details of logged-in user.',
+  })
   @ApiResponse({ status: 200, description: 'Current user profile.' })
   async getMe(@CurrentUser() user: any) {
     return user;
@@ -58,10 +86,16 @@ export class AuthController {
   @Post('change-password')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Change password', description: 'Change current user password.' })
+  @ApiOperation({
+    summary: 'Change password',
+    description: 'Change current user password.',
+  })
   @ApiResponse({ status: 200, description: 'Password updated.' })
   @ApiResponse({ status: 400, description: 'Incorrect old password.' })
-  async changePassword(@CurrentUser('id') userId: string, @Body() changePasswordDto: ChangePasswordDto) {
+  async changePassword(
+    @CurrentUser('id') userId: string,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
     return this.authService.changePassword(userId, changePasswordDto);
   }
 }

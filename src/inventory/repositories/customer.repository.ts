@@ -38,7 +38,10 @@ export class CustomerRepository {
     });
   }
 
-  async update(id: string, data: Prisma.CustomerUpdateInput): Promise<Customer> {
+  async update(
+    id: string,
+    data: Prisma.CustomerUpdateInput,
+  ): Promise<Customer> {
     return this.prisma.customer.update({
       where: { id },
       data,

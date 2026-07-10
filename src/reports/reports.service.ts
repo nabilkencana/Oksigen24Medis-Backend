@@ -32,20 +32,30 @@ export class ReportsService {
     incomes.forEach((inc) => {
       const amount = Number(inc.amount);
       totalRevenue += amount;
-      categoryTotals[inc.category] = (categoryTotals[inc.category] || 0) + amount;
+      categoryTotals[inc.category] =
+        (categoryTotals[inc.category] || 0) + amount;
     });
 
     // Group by Date/Period
     const periodMap = new Map<string, number>();
     incomes.forEach((inc) => {
-      const periodKey = this.getPeriodKey(inc.date, groupBy || GroupByOption.DAILY);
-      periodKey && periodMap.set(periodKey, (periodMap.get(periodKey) || 0) + Number(inc.amount));
+      const periodKey = this.getPeriodKey(
+        inc.date,
+        groupBy || GroupByOption.DAILY,
+      );
+      periodKey &&
+        periodMap.set(
+          periodKey,
+          (periodMap.get(periodKey) || 0) + Number(inc.amount),
+        );
     });
 
-    const timeline = Array.from(periodMap.entries()).map(([period, amount]) => ({
-      period,
-      amount,
-    }));
+    const timeline = Array.from(periodMap.entries()).map(
+      ([period, amount]) => ({
+        period,
+        amount,
+      }),
+    );
 
     return {
       totalRevenue,
@@ -76,7 +86,7 @@ export class ReportsService {
       orderBy: { startDate: 'desc' },
     });
 
-    let totalRentals = rentals.length;
+    const totalRentals = rentals.length;
     let rentingCount = 0;
     let returnedCount = 0;
     let totalVolumeLeased = 0; // sum of cylinder capacities
@@ -115,34 +125,35 @@ export class ReportsService {
   // INVENTORY REPORT
   // ==========================================
   async getInventoryReport() {
-    const [products, cylinders, cylinderCounts, lowStockProducts] = await Promise.all([
-      // Products Catalog
-      this.prisma.product.findMany({
-        where: { deletedAt: null },
-        include: { category: true },
-      }),
+    const [products, cylinders, cylinderCounts, lowStockProducts] =
+      await Promise.all([
+        // Products Catalog
+        this.prisma.product.findMany({
+          where: { deletedAt: null },
+          include: { category: true },
+        }),
 
-      // Total Cylinders
-      this.prisma.cylinder.findMany({
-        where: { deletedAt: null },
-        include: { oxygenType: true },
-      }),
+        // Total Cylinders
+        this.prisma.cylinder.findMany({
+          where: { deletedAt: null },
+          include: { oxygenType: true },
+        }),
 
-      // Cylinder count grouped by status
-      this.prisma.cylinder.groupBy({
-        where: { deletedAt: null },
-        by: ['status'],
-        _count: { id: true },
-      }),
+        // Cylinder count grouped by status
+        this.prisma.cylinder.groupBy({
+          where: { deletedAt: null },
+          by: ['status'],
+          _count: { id: true },
+        }),
 
-      // Low stock products list
-      this.prisma.product.findMany({
-        where: {
-          deletedAt: null,
-          currentStock: { lte: this.prisma.product.fields.minStock },
-        },
-      }),
-    ]);
+        // Low stock products list
+        this.prisma.product.findMany({
+          where: {
+            deletedAt: null,
+            currentStock: { lte: this.prisma.product.fields.minStock },
+          },
+        }),
+      ]);
 
     // Format cylinder status summary
     const cylinderStatusSummary: Record<string, number> = {
@@ -206,19 +217,29 @@ export class ReportsService {
     expenses.forEach((exp) => {
       const amount = Number(exp.amount);
       totalExpense += amount;
-      categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + amount;
+      categoryTotals[exp.category] =
+        (categoryTotals[exp.category] || 0) + amount;
     });
 
     const periodMap = new Map<string, number>();
     expenses.forEach((exp) => {
-      const periodKey = this.getPeriodKey(exp.date, groupBy || GroupByOption.DAILY);
-      periodKey && periodMap.set(periodKey, (periodMap.get(periodKey) || 0) + Number(exp.amount));
+      const periodKey = this.getPeriodKey(
+        exp.date,
+        groupBy || GroupByOption.DAILY,
+      );
+      periodKey &&
+        periodMap.set(
+          periodKey,
+          (periodMap.get(periodKey) || 0) + Number(exp.amount),
+        );
     });
 
-    const timeline = Array.from(periodMap.entries()).map(([period, amount]) => ({
-      period,
-      amount,
-    }));
+    const timeline = Array.from(periodMap.entries()).map(
+      ([period, amount]) => ({
+        period,
+        amount,
+      }),
+    );
 
     return {
       totalExpense,

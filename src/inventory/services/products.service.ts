@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ProductRepository } from '../repositories/product.repository';
 import { CategoryRepository } from '../repositories/category.repository';
 import { CreateProductDto, UpdateProductDto } from '../dto/product.dto';
@@ -19,7 +23,9 @@ export class ProductsService {
 
     const category = await this.categoryRepository.findById(dto.categoryId);
     if (!category) {
-      throw new NotFoundException(`Category with ID ${dto.categoryId} not found`);
+      throw new NotFoundException(
+        `Category with ID ${dto.categoryId} not found`,
+      );
     }
 
     return this.productRepository.create({
@@ -35,7 +41,13 @@ export class ProductsService {
   }
 
   async findAll(paginationDto: PaginationDto) {
-    const { page = 1, limit = 10, search, sortBy = 'name', sortOrder = 'asc' } = paginationDto;
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      sortBy = 'name',
+      sortOrder = 'asc',
+    } = paginationDto;
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -82,14 +94,18 @@ export class ProductsService {
     if (dto.sku) {
       const existing = await this.productRepository.findBySku(dto.sku);
       if (existing && existing.id !== id) {
-        throw new ConflictException(`SKU ${dto.sku} already in use by another product`);
+        throw new ConflictException(
+          `SKU ${dto.sku} already in use by another product`,
+        );
       }
     }
 
     if (dto.categoryId) {
       const category = await this.categoryRepository.findById(dto.categoryId);
       if (!category) {
-        throw new NotFoundException(`Category with ID ${dto.categoryId} not found`);
+        throw new NotFoundException(
+          `Category with ID ${dto.categoryId} not found`,
+        );
       }
       delete updateData.categoryId;
       updateData.category = { connect: { id: dto.categoryId } };

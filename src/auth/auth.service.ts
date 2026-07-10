@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
@@ -54,7 +58,10 @@ export class AuthService {
       throw new ForbiddenException('Access Denied');
     }
 
-    const refreshTokenMatches = await bcrypt.compare(refreshToken, user.refreshTokenHash);
+    const refreshTokenMatches = await bcrypt.compare(
+      refreshToken,
+      user.refreshTokenHash,
+    );
     if (!refreshTokenMatches) {
       throw new ForbiddenException('Access Denied');
     }
@@ -62,7 +69,11 @@ export class AuthService {
     const tokens = await this.getTokens(user.id, user.email);
     await this.updateRefreshTokenHash(user.id, tokens.refreshToken);
 
-    const { passwordHash: _, refreshTokenHash: __, ...sanitizedUser } = user as any;
+    const {
+      passwordHash: _,
+      refreshTokenHash: __,
+      ...sanitizedUser
+    } = user as any;
 
     return {
       user: sanitizedUser,
@@ -78,7 +89,10 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    const oldPasswordMatches = await bcrypt.compare(dto.oldPassword, user.passwordHash);
+    const oldPasswordMatches = await bcrypt.compare(
+      dto.oldPassword,
+      user.passwordHash,
+    );
     if (!oldPasswordMatches) {
       throw new UnauthorizedException('Incorrect old password');
     }
@@ -106,15 +120,20 @@ export class AuthService {
       this.jwtService.signAsync(
         { sub: userId, email },
         {
-          secret: this.configService.get<string>('jwt.secret') || 'default-secret',
-          expiresIn: (this.configService.get<string>('jwt.expiresIn') || '1h') as any,
+          secret:
+            this.configService.get<string>('jwt.secret') || 'default-secret',
+          expiresIn: (this.configService.get<string>('jwt.expiresIn') ||
+            '1h') as any,
         },
       ),
       this.jwtService.signAsync(
         { sub: userId, email },
         {
-          secret: this.configService.get<string>('jwt.refreshSecret') || 'default-refresh-secret',
-          expiresIn: (this.configService.get<string>('jwt.refreshExpiresIn') || '7d') as any,
+          secret:
+            this.configService.get<string>('jwt.refreshSecret') ||
+            'default-refresh-secret',
+          expiresIn: (this.configService.get<string>('jwt.refreshExpiresIn') ||
+            '7d') as any,
         },
       ),
     ]);
