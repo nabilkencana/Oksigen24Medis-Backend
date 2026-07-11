@@ -36,7 +36,18 @@ async function bootstrap() {
 
   // 2. Enable CORS (Cross-Origin Resource Sharing)
   app.enableCors({
-    origin: true,
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        'https://oksigen24medis-dashboard.vercel.app',
+        'https://api.oksigen24medis.com',
+        'http://localhost:3000',
+      ];
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
