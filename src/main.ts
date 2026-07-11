@@ -38,9 +38,13 @@ async function bootstrap() {
   app.enableCors({
     origin: (origin, callback) => {
       const allowedOrigins = [
-        'https://oksigen24medis-dashboard.vercel.app',
-        'https://api.oksigen24medis.com',
-        'http://localhost:3000',
+        'https://oksigen24-medis-dashboard.vercel.app', // Dashboard Vercel (with dash)
+        'https://oksigen24medis-dashboard.vercel.app',  // Dashboard Vercel (without dash)
+        'https://api.oksigen24medis.com',               // API
+        'http://localhost:3000',                        // Dev Dashboard/Backend
+        'http://localhost:3001',
+        'http://localhost:5173',                        // Dev Vite
+        'http://localhost:5174',
       ];
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
