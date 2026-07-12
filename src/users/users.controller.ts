@@ -83,6 +83,20 @@ export class UsersController {
     return this.usersService.findById(id);
   }
 
+  @Patch('profile')
+  @ApiOperation({
+    summary: 'Update current user profile',
+    description: 'Allows any authenticated user to update their own profile details.',
+  })
+  @ApiResponse({ status: 200, description: 'Profile updated successfully.' })
+  updateProfile(
+    @CurrentUser('id') userId: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    const { role, isActive, ...profileData } = updateUserDto;
+    return this.usersService.update(userId, profileData);
+  }
+
   @Patch(':id')
   @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiOperation({
