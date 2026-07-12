@@ -40,7 +40,8 @@ async function bootstrap() {
       const allowedOrigins = [
         'https://oksigen24-medis-dashboard.vercel.app', // Dashboard Vercel (with dash)
         'https://oksigen24medis-dashboard.vercel.app',  // Dashboard Vercel (without dash)
-        'https://api.oksigen24medis.com',               // API
+        'https://api.oksigen24medis.com',               // API Production
+        'https://dashboard.oksigen24medis.com/',        // Dashboard Production 
         'http://localhost:3000',                        // Dev Dashboard/Backend
         'http://localhost:3001',
         'http://localhost:5173',                        // Dev Vite
