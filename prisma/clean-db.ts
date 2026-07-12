@@ -42,9 +42,6 @@ async function main() {
   await prisma.product.deleteMany({});
   console.log('- Product deleted');
 
-  await prisma.category.deleteMany({});
-  console.log('- Category deleted');
-
   await prisma.customer.deleteMany({});
   console.log('- Customer deleted');
 
