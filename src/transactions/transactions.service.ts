@@ -140,6 +140,8 @@ export class TransactionsService {
       }
 
       return rental;
+    }, {
+      timeout: 20000,
     });
   }
 
@@ -216,6 +218,8 @@ export class TransactionsService {
         message: 'Cylinders returned successfully',
         status: updatedRentalStatus,
       };
+    }, {
+      timeout: 20000,
     });
   }
 
@@ -273,6 +277,8 @@ export class TransactionsService {
       }
 
       return { message: 'Cylinders sent to vendor successfully' };
+    }, {
+      timeout: 20000,
     });
   }
 
@@ -334,6 +340,8 @@ export class TransactionsService {
       }
 
       return { message: 'Cylinders received and available in warehouse' };
+    }, {
+      timeout: 20000,
     });
   }
 
@@ -467,6 +475,8 @@ export class TransactionsService {
       }
 
       return sale;
+    }, {
+      timeout: 20000,
     });
   }
 
@@ -579,6 +589,8 @@ export class TransactionsService {
       }
 
       return purchase;
+    }, {
+      timeout: 20000,
     });
   }
 
