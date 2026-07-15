@@ -33,7 +33,7 @@ export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
   @Post('rentals')
-  @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.WAREHOUSE)
+  @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.FINANCE, UserRole.WAREHOUSE)
   @ApiOperation({ summary: 'Create new cylinder rental' })
   @ApiResponse({
     status: 201,
@@ -47,7 +47,7 @@ export class TransactionsController {
   }
 
   @Post('rentals/:id/return')
-  @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.WAREHOUSE)
+  @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.FINANCE, UserRole.WAREHOUSE)
   @ApiOperation({ summary: 'Process cylinder return for a rental' })
   returnRental(
     @Param('id') id: string,
@@ -58,7 +58,7 @@ export class TransactionsController {
   }
 
   @Post('refills/send')
-  @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.WAREHOUSE)
+  @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.FINANCE, UserRole.WAREHOUSE)
   @ApiOperation({ summary: 'Send empty cylinders to a vendor for refill' })
   sendToVendor(
     @Body() dto: SendToVendorDto,
@@ -68,7 +68,7 @@ export class TransactionsController {
   }
 
   @Post('refills/receive')
-  @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.WAREHOUSE)
+  @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.FINANCE, UserRole.WAREHOUSE)
   @ApiOperation({ summary: 'Receive filled cylinders back from a vendor' })
   receiveFromVendor(
     @Body() dto: ReceiveFromVendorDto,
@@ -85,7 +85,7 @@ export class TransactionsController {
   }
 
   @Post('purchases')
-  @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.WAREHOUSE)
+  @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.FINANCE, UserRole.WAREHOUSE)
   @ApiOperation({
     summary: 'Process a supplier purchase (restocking products)',
   })
