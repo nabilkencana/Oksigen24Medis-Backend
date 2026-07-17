@@ -18,6 +18,7 @@ import { CreateRentalDto, ReturnRentalDto } from './dto/rental.dto';
 import { SendToVendorDto, ReceiveFromVendorDto } from './dto/vendor-refill.dto';
 import { CreateSaleDto } from './dto/sale.dto';
 import { CreatePurchaseDto } from './dto/purchase.dto';
+import { CreateCustomerRefillDto } from './dto/customer-refill.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -84,6 +85,16 @@ export class TransactionsController {
     return this.transactionsService.createSale(dto, userId);
   }
 
+  @Post('refills/customer')
+  @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.FINANCE)
+  @ApiOperation({ summary: 'Create new customer cylinder refill transaction' })
+  createCustomerRefill(
+    @Body() dto: CreateCustomerRefillDto,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.transactionsService.createCustomerRefill(dto, userId);
+  }
+
   @Post('purchases')
   @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.FINANCE, UserRole.WAREHOUSE)
   @ApiOperation({
@@ -106,6 +117,12 @@ export class TransactionsController {
   @ApiOperation({ summary: 'Get paginated sales list' })
   findAllSales(@Query() paginationDto: PaginationDto) {
     return this.transactionsService.findAllSales(paginationDto);
+  }
+
+  @Get('refills/customer')
+  @ApiOperation({ summary: 'Get paginated customer refills list' })
+  findAllCustomerRefills(@Query() paginationDto: PaginationDto) {
+    return this.transactionsService.findAllCustomerRefills(paginationDto);
   }
 
   @Get('purchases')

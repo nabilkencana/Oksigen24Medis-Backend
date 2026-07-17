@@ -39,6 +39,7 @@ enum MovementReferenceType {
   RENTAL
   RETURN
   VENDOR_REFILL
+  CUSTOMER_REFILL
   SALE
   PURCHASE
 }
@@ -60,6 +61,7 @@ model User {
   rentals          Rental[]        @relation("CreatedRentals")
   sales            Sale[]          @relation("CreatedSales")
   purchases        Purchase[]      @relation("CreatedPurchases")
+  customerRefills  CustomerRefill[] @relation("CreatedCustomerRefills")
   expenses         Expense[]       @relation("CreatedExpenses")
   incomes          Income[]        @relation("CreatedIncomes")
   stockMovements   StockMovement[] @relation("CreatedStockMovements")
@@ -94,6 +96,7 @@ model Customer {
   // Relations
   rentals   Rental[]
   sales     Sale[]
+  refills   CustomerRefill[]
 
   @@map("customers")
 }
@@ -267,6 +270,43 @@ model SaleItem {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("sale_items")
+}
+
+// ── Customer Refill (Isi Ulang Pelanggan) ──────────────────────────────────
+model CustomerRefill {
+  id            String        @id @default(uuid()) @db.Uuid
+  invoiceNo     String        @unique @map("invoice_no")
+  customerId    String?       @db.Uuid @map("customer_id")
+  customer      Customer?     @relation(fields: [customerId], references: [id])
+  totalAmount   Decimal       @db.Decimal(12, 2) @map("total_amount")
+  amountPaid    Decimal       @default(0.00) @db.Decimal(12, 2) @map("amount_paid")
+  paymentMethod String        @default("TUNAI") @map("payment_method")
+  status        PaymentStatus @default(PAID)
+  notes         String?
+  createdById   String        @db.Uuid @map("created_by_id")
+  createdBy     User          @relation("CreatedCustomerRefills", fields: [createdById], references: [id])
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+  deletedAt     DateTime?     @map("deleted_at")
+
+  // Relations
+  items         CustomerRefillItem[]
+
+  @@map("customer_refills")
+}
+
+model CustomerRefillItem {
+  id               String         @id @default(uuid()) @db.Uuid
+  refillId         String         @db.Uuid @map("refill_id")
+  refill           CustomerRefill @relation(fields: [refillId], references: [id])
+  cylinderSize     String         @map("cylinder_size")   // e.g. "6m3", "1m3"
+  quantity         Int
+  unitPrice        Decimal        @db.Decimal(12, 2) @map("unit_price")
+  subtotal         Decimal        @db.Decimal(12, 2)
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+
+  @@map("customer_refill_items")
 }
 
 model Purchase {

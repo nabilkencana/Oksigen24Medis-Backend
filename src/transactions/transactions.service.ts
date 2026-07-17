@@ -8,6 +8,7 @@ import { CreateRentalDto, ReturnRentalDto } from './dto/rental.dto';
 import { SendToVendorDto, ReceiveFromVendorDto } from './dto/vendor-refill.dto';
 import { CreateSaleDto } from './dto/sale.dto';
 import { CreatePurchaseDto } from './dto/purchase.dto';
+import { CreateCustomerRefillDto } from './dto/customer-refill.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import {
   CylinderStatus,
@@ -481,6 +482,94 @@ export class TransactionsService {
   }
 
   // ==========================================
+  // CUSTOMER REFILL WORKFLOW
+  // ==========================================
+  async createCustomerRefill(dto: CreateCustomerRefillDto, userId: string) {
+    const amountPaid = dto.amountPaid ?? 0;
+    return this.prisma.$transaction(async (tx) => {
+      if (dto.customerId) {
+        const customer = await tx.customer.findFirst({
+          where: { id: dto.customerId, deletedAt: null },
+        });
+        if (!customer) throw new NotFoundException('Customer not found');
+      }
+
+      let totalAmount = 0;
+      const refillItemsData = dto.items.map((item) => {
+        const subtotal = item.unitPrice * item.quantity;
+        totalAmount += subtotal;
+
+        return {
+          cylinderSize: item.cylinderSize,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          subtotal,
+        };
+      });
+
+      // Generate Invoice No (e.g. RFL-YYYYMMDD-XXXX)
+      const count = await tx.customerRefill.count();
+      const invoiceNo = `RFL-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(count + 1).padStart(4, '0')}`;
+
+      // Determine Payment Status
+      let paymentStatus: PaymentStatus = PaymentStatus.PAID;
+      if (amountPaid === 0) {
+        paymentStatus = PaymentStatus.UNPAID;
+      } else if (amountPaid < totalAmount) {
+        paymentStatus = PaymentStatus.PARTIAL;
+      }
+
+      // Create Customer Refill
+      const refill = await tx.customerRefill.create({
+        data: {
+          invoiceNo,
+          customerId: dto.customerId || null,
+          totalAmount,
+          amountPaid,
+          paymentMethod: dto.paymentMethod,
+          status: paymentStatus,
+          notes: dto.notes,
+          createdById: userId,
+          items: {
+            create: refillItemsData,
+          },
+        },
+        include: {
+          customer: true,
+          items: true,
+        },
+      });
+
+      // Log Income if amountPaid > 0
+      if (amountPaid > 0) {
+        await tx.income.create({
+          data: {
+            category: 'REFILL_REVENUE',
+            amount: amountPaid,
+            description: `Pembayaran invoice isi ulang ${invoiceNo}`,
+            createdById: userId,
+            referenceType: MovementReferenceType.CUSTOMER_REFILL,
+            referenceId: refill.id,
+          },
+        });
+      }
+
+      // Update customer balance debt if payment is partial/unpaid
+      if (dto.customerId && amountPaid < totalAmount) {
+        const debt = totalAmount - amountPaid;
+        await tx.customer.update({
+          where: { id: dto.customerId },
+          data: { balance: { increment: debt } },
+        });
+      }
+
+      return refill;
+    }, {
+      timeout: 20000,
+    });
+  }
+
+  // ==========================================
   // PURCHASE WORKFLOW (RESTOCK)
   // ==========================================
   async createPurchase(dto: CreatePurchaseDto, userId: string) {
@@ -738,6 +827,44 @@ export class TransactionsService {
         include: { product: true, cylinder: true, createdBy: true },
       }),
       this.prisma.stockMovement.count({ where }),
+    ]);
+
+    return {
+      items,
+      meta: {
+        totalItems: total,
+        itemCount: items.length,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
+      },
+    };
+  }
+
+  async findAllCustomerRefills(paginationDto: PaginationDto) {
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = paginationDto;
+    const skip = (page - 1) * limit;
+
+    const where: any = { deletedAt: null };
+    if (search) {
+      where.OR = [{ invoiceNo: { contains: search, mode: 'insensitive' } }];
+    }
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.customerRefill.findMany({
+        skip,
+        take: limit,
+        where,
+        orderBy: { [sortBy]: sortOrder },
+        include: { customer: true, items: true },
+      }),
+      this.prisma.customerRefill.count({ where }),
     ]);
 
     return {
