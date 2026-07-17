@@ -153,7 +153,7 @@ export class DashboardService {
         referenceId: m.referenceId,
         itemName:
           m.product?.name ||
-          m.cylinder?.serialNumber ||
+          (m.cylinder ? `Tabung ${m.cylinder.serialNumber} (${m.cylinder.size})` : null) ||
           (m.referenceType === 'CUSTOMER_REFILL' ? refillItemsMap.get(m.referenceId) : null) ||
           'N/A',
         quantity: m.quantity,
