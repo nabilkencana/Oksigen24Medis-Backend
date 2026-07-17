@@ -422,3 +422,12 @@ docker build -t oxygen-backend .
 # Jalankan container di background
 docker-compose up -d
 ```
+
+---
+
+## 🛠️ Perbaikan & Aturan Desain Database Terkini
+
+Berikut adalah perbaikan dan penyesuaian yang baru saja diterapkan pada sisi Backend & Database:
+1. **Penghapusan Kolom Email Supplier**: Sesuai dengan instruksi terbaru, pendaftaran/pembuatan data supplier baru (Vendor) kini **tidak memerlukan alamat email** (kolom email dihapus dari payload input form maupun response relevan).
+2. **Pembersihan Data Aset dari Tabel Produk**: Tabung Oksigen yang awalnya terdaftar secara salah di tabel `products` (SKU `CYL-1M3` dan `CYL-6M3`) telah **dihapus permanen (hard delete) dari database**.
+   * *Aturan Desain*: Seluruh tabung oksigen fisik (aset sirkulasi) **wajib disimpan hanya pada tabel `cylinders`** (bersama model tracking serial number, size, kapasitas, status sewa, dll) dan **tidak boleh dicampur ke dalam tabel `products`** (yang khusus untuk barang dagang retail sekali beli).
