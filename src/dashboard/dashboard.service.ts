@@ -19,7 +19,7 @@ export class DashboardService {
       activeRentalsCount,
       availableCylindersCount,
       vendorCylindersCount,
-      lowStockProducts,
+      allProducts,
       recentMovements,
     ] = await Promise.all([
       // 1. Today's Revenue
@@ -64,11 +64,10 @@ export class DashboardService {
         },
       }),
 
-      // 6. Low Stock Products count
+      // 6. Low Stock Products count (fetch all and filter in memory)
       this.prisma.product.findMany({
         where: {
           deletedAt: null,
-          currentStock: { lte: this.prisma.product.fields.minStock },
         },
         include: { category: true },
       }),
@@ -84,6 +83,10 @@ export class DashboardService {
         },
       }),
     ]);
+
+    const lowStockProducts = allProducts.filter(
+      (p) => p.currentStock <= p.minStock,
+    );
 
     // Fetch customer refills for recent movements if any
     const refillIds = recentMovements
