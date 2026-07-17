@@ -85,6 +85,23 @@ export class DashboardService {
       }),
     ]);
 
+    // Fetch customer refills for recent movements if any
+    const refillIds = recentMovements
+      .filter((m) => m.referenceType === 'CUSTOMER_REFILL')
+      .map((m) => m.referenceId);
+
+    const refillItemsMap = new Map<string, string>();
+    if (refillIds.length > 0) {
+      const refills = await this.prisma.customerRefill.findMany({
+        where: { id: { in: refillIds } },
+        include: { items: true },
+      });
+      refills.forEach((r) => {
+        const itemNames = r.items.map((item) => `${item.cylinderSize}`).join(', ');
+        refillItemsMap.set(r.id, `Isi Ulang ${itemNames}`);
+      });
+    }
+
     // 8. Revenue Chart for last 30 days
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -134,7 +151,11 @@ export class DashboardService {
         type: m.type,
         referenceType: m.referenceType,
         referenceId: m.referenceId,
-        itemName: m.product?.name || m.cylinder?.serialNumber || 'N/A',
+        itemName:
+          m.product?.name ||
+          m.cylinder?.serialNumber ||
+          (m.referenceType === 'CUSTOMER_REFILL' ? refillItemsMap.get(m.referenceId) : null) ||
+          'N/A',
         quantity: m.quantity,
         beforeStock: m.beforeStock,
         afterStock: m.afterStock,

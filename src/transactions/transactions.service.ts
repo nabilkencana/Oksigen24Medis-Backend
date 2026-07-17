@@ -563,6 +563,21 @@ export class TransactionsService {
         });
       }
 
+      // Log StockMovement for each refill item
+      for (const item of refillItemsData) {
+        await tx.stockMovement.create({
+          data: {
+            type: MovementType.OUT,
+            quantity: item.quantity,
+            beforeStock: 0,
+            afterStock: 0,
+            referenceType: MovementReferenceType.CUSTOMER_REFILL,
+            referenceId: refill.id,
+            createdById: userId,
+          },
+        });
+      }
+
       return refill;
     }, {
       timeout: 20000,
