@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { CylinderStatus } from '@prisma/client';
 
+
 @Injectable()
 export class DashboardService {
   constructor(private readonly prisma: PrismaService) {}
@@ -167,5 +168,212 @@ export class DashboardService {
       })),
       revenueChart,
     };
+  }
+
+  async getNotifications() {
+    // Fetch 50 latest events across all transaction types in parallel
+    const [rentals, returns, sales, customerRefills, vendorSends, vendorReceives, purchases] =
+      await Promise.all([
+        // Kontrak Sewa Baru
+        this.prisma.rental.findMany({
+          take: 15,
+          orderBy: { createdAt: 'desc' },
+          where: { deletedAt: null },
+          include: {
+            customer: { select: { name: true } },
+            createdBy: { select: { fullName: true } },
+            items: { include: { cylinder: { select: { serialNumber: true, size: true } } } },
+          },
+        }),
+
+        // Pengembalian Tabung
+        this.prisma.rental.findMany({
+          take: 15,
+          orderBy: { updatedAt: 'desc' },
+          where: { status: 'RETURNED', deletedAt: null, returnDate: { not: null } },
+          include: {
+            customer: { select: { name: true } },
+            createdBy: { select: { fullName: true } },
+            items: { include: { cylinder: { select: { serialNumber: true, size: true } } } },
+          },
+        }),
+
+        // Penjualan Produk
+        this.prisma.sale.findMany({
+          take: 15,
+          orderBy: { createdAt: 'desc' },
+          where: { deletedAt: null },
+          include: {
+            customer: { select: { name: true } },
+            createdBy: { select: { fullName: true } },
+            items: { include: { product: { select: { name: true } } } },
+          },
+        }),
+
+        // Isi Ulang Pelanggan
+        this.prisma.customerRefill.findMany({
+          take: 15,
+          orderBy: { createdAt: 'desc' },
+          where: { deletedAt: null },
+          include: {
+            customer: { select: { name: true } },
+            createdBy: { select: { fullName: true } },
+            items: true,
+          },
+        }),
+
+        // Kirim ke Vendor
+        this.prisma.stockMovement.findMany({
+          take: 10,
+          orderBy: { createdAt: 'desc' },
+          where: { referenceType: 'VENDOR_REFILL', type: 'OUT' },
+          include: {
+            cylinder: { select: { serialNumber: true, size: true } },
+            createdBy: { select: { fullName: true } },
+          },
+        }),
+
+        // Terima dari Vendor
+        this.prisma.stockMovement.findMany({
+          take: 10,
+          orderBy: { createdAt: 'desc' },
+          where: { referenceType: 'VENDOR_REFILL', type: 'IN' },
+          include: {
+            cylinder: { select: { serialNumber: true, size: true } },
+            createdBy: { select: { fullName: true } },
+          },
+        }),
+
+        // Pembelian Produk
+        this.prisma.purchase.findMany({
+          take: 10,
+          orderBy: { createdAt: 'desc' },
+          where: { deletedAt: null },
+          include: {
+            vendor: { select: { name: true } },
+            createdBy: { select: { fullName: true } },
+            items: { include: { product: { select: { name: true } } } },
+          },
+        }),
+      ]);
+
+    const notifications: Array<{
+      id: string;
+      notifType: string;
+      title: string;
+      message: string;
+      category: 'success' | 'info' | 'warning' | 'alert';
+      amount?: number;
+      createdAt: Date;
+      createdBy: string;
+    }> = [];
+
+    // Map rentals
+    for (const r of rentals) {
+      const cylinders = r.items.map((i) => `${i.cylinder.size}`).join(', ');
+      notifications.push({
+        id: `rental_${r.id}`,
+        notifType: 'RENTAL',
+        title: 'Kontrak Sewa Baru',
+        message: `${r.customer?.name ?? 'Pelanggan'} menyewa ${r.items.length} tabung (${cylinders}). No. Invoice: ${r.invoiceNo}.`,
+        category: 'success',
+        amount: Number(r.totalAmount),
+        createdAt: r.createdAt,
+        createdBy: r.createdBy.fullName,
+      });
+    }
+
+    // Map returns (only those with returnDate)
+    for (const r of returns) {
+      if (!r.returnDate) continue;
+      const cylinders = r.items.map((i) => `${i.cylinder.size}`).join(', ');
+      notifications.push({
+        id: `return_${r.id}`,
+        notifType: 'RETURN',
+        title: 'Pengembalian Tabung',
+        message: `${r.customer?.name ?? 'Pelanggan'} mengembalikan ${r.items.length} tabung (${cylinders}). Invoice: ${r.invoiceNo}.`,
+        category: 'info',
+        createdAt: r.returnDate,
+        createdBy: r.createdBy.fullName,
+      });
+    }
+
+    // Map sales
+    for (const s of sales) {
+      const items = s.items.map((i) => `${i.product.name} (${i.quantity}x)`).join(', ');
+      notifications.push({
+        id: `sale_${s.id}`,
+        notifType: 'SALE',
+        title: 'Penjualan Produk',
+        message: `${s.customer?.name ?? 'Umum'} membeli ${items}. Invoice: ${s.invoiceNo}.`,
+        category: 'success',
+        amount: Number(s.totalAmount),
+        createdAt: s.createdAt,
+        createdBy: s.createdBy.fullName,
+      });
+    }
+
+    // Map customer refills
+    for (const cr of customerRefills) {
+      const sizes = cr.items.map((i) => `${i.cylinderSize} (${i.quantity}x)`).join(', ');
+      notifications.push({
+        id: `refill_${cr.id}`,
+        notifType: 'CUSTOMER_REFILL',
+        title: 'Isi Ulang Pelanggan',
+        message: `${cr.customer?.name ?? 'Pelanggan'} mengisi ulang tabung: ${sizes}. Invoice: ${cr.invoiceNo}.`,
+        category: 'success',
+        amount: Number(cr.totalAmount),
+        createdAt: cr.createdAt,
+        createdBy: cr.createdBy.fullName,
+      });
+    }
+
+    // Map vendor sends
+    for (const m of vendorSends) {
+      notifications.push({
+        id: `vsend_${m.id}`,
+        notifType: 'VENDOR_SEND',
+        title: 'Tabung Dikirim ke Vendor',
+        message: `Tabung ${m.cylinder?.serialNumber ?? ''} (${m.cylinder?.size ?? ''}) dikirim untuk pengisian ulang.`,
+        category: 'warning',
+        createdAt: m.createdAt,
+        createdBy: m.createdBy.fullName,
+      });
+    }
+
+    // Map vendor receives
+    for (const m of vendorReceives) {
+      notifications.push({
+        id: `vrecv_${m.id}`,
+        notifType: 'VENDOR_RECEIVE',
+        title: 'Tabung Diterima dari Vendor',
+        message: `Tabung ${m.cylinder?.serialNumber ?? ''} (${m.cylinder?.size ?? ''}) sudah diisi ulang dan diterima kembali.`,
+        category: 'info',
+        createdAt: m.createdAt,
+        createdBy: m.createdBy.fullName,
+      });
+    }
+
+    // Map purchases
+    for (const p of purchases) {
+      const items = p.items.map((i) => `${i.product.name} (${i.quantity}x)`).join(', ');
+      notifications.push({
+        id: `purchase_${p.id}`,
+        notifType: 'PURCHASE',
+        title: 'Pembelian Stok',
+        message: `Pembelian dari ${p.vendor.name}: ${items}. Invoice: ${p.invoiceNo}.`,
+        category: 'info',
+        amount: Number(p.totalAmount),
+        createdAt: p.createdAt,
+        createdBy: p.createdBy.fullName,
+      });
+    }
+
+    // Sort all by createdAt descending
+    notifications.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+
+    return notifications.slice(0, 50);
   }
 }

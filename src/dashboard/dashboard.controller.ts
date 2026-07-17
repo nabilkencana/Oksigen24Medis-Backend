@@ -29,4 +29,18 @@ export class DashboardController {
   getSummary() {
     return this.dashboardService.getDashboardSummary();
   }
+
+  @Get('notifications')
+  @ApiOperation({
+    summary: 'Get recent transaction notifications',
+    description:
+      'Returns the 50 most recent transaction events (rentals, returns, sales, refills, vendor refills, purchases) formatted as notifications.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Notifications retrieved successfully.',
+  })
+  getNotifications() {
+    return this.dashboardService.getNotifications();
+  }
 }
