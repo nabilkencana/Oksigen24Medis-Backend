@@ -59,15 +59,19 @@ export class TransactionsService {
       const invoiceNo = `RNT-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(count + 1).padStart(4, '0')}`;
 
       // 4. Calculate totalAmount (based on oxygen types price per unit)
-      let totalAmount = 0;
+      let calculatedTotalAmount = 0;
       const rentalItemsData = cylinders.map((cyl) => {
         const price = Number(cyl.oxygenType.pricePerUnit);
-        totalAmount += price;
+        calculatedTotalAmount += price;
         return {
           cylinderId: cyl.id,
           price,
         };
       });
+
+      const totalAmount = (dto.totalAmount !== undefined && dto.totalAmount !== null)
+        ? dto.totalAmount
+        : calculatedTotalAmount;
 
       // 5. Create Rental Record
       const rental = await tx.rental.create({

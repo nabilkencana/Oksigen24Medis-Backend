@@ -30,6 +30,12 @@ export class CreateRentalDto {
   @IsOptional()
   amountPaid?: number = 0;
 
+  @ApiPropertyOptional({ example: 605000 })
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  totalAmount?: number;
+
   @ApiPropertyOptional({ example: 'Regular customer rental' })
   @IsString()
   @IsOptional()
