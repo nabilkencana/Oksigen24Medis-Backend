@@ -105,9 +105,9 @@ async function main() {
 
   // 6. Seed Oxygen Types
   const oxygenTypes = [
-    { name: 'Medical Oxygen 99.5%', purity: 99.50, pressure: 150.00, pricePerUnit: 75000.00, description: 'High purity medical grade oxygen' },
+    { name: 'Medical Oxygen 99.5%', purity: 99.50, pressure: 150.00, pricePerUnit: 300000.00, description: 'High purity medical grade oxygen' },
     { name: 'Industrial Oxygen 99.0%', purity: 99.00, pressure: 150.00, pricePerUnit: 50000.00, description: 'Industrial grade oxygen for welding & cutting' },
-    { name: 'Sewa Regulator Medis', purity: 0.00, pressure: 0.00, pricePerUnit: 35000.00, description: 'Sewa regulator oksigen medis standar' },
+    { name: 'Sewa Regulator', purity: 0.00, pressure: 0.00, pricePerUnit: 75000.00, description: 'Sewa regulator oksigen medis standar' },
     { name: 'Sewa Troli Tabung 1m3', purity: 0.00, pressure: 0.00, pricePerUnit: 20000.00, description: 'Sewa troli besi dorong tabung 1m3' },
   ];
 
@@ -174,9 +174,9 @@ async function main() {
   console.log('Categories upserted.');
 
   const products = [
-    { name: 'Nesco Oxygen Regulator', sku: 'REG-NES-001', description: 'Medical grade regulator with humidifier bottle', price: 350000.0, cost: 210000.0, currentStock: 25, minStock: 5, categoryId: dbCategories[0].id },
-    { name: 'Steel Cylinder Trolley 1m3', sku: 'TRL-STL-001', description: 'Heavy duty steel trolley for 1m3 cylinders', price: 180000.0, cost: 110000.0, currentStock: 12, minStock: 3, categoryId: dbCategories[1].id },
-    { name: 'Nasal Cannula Adult', sku: 'CON-CAN-001', description: 'Disposable oxygen tube for adults, length 2m', price: 15000.0, cost: 5000.0, currentStock: 100, minStock: 15, categoryId: dbCategories[2].id },
+    { name: 'regulator oksigen', sku: 'REG-NES-001', description: 'Medical grade regulator with humidifier bottle', price: 350000.0, cost: 210000.0, currentStock: 25, minStock: 5, categoryId: dbCategories[0].id },
+    { name: 'troly', sku: 'TRL-STL-001', description: 'Heavy duty steel trolley for 1m3 cylinders', price: 180000.0, cost: 110000.0, currentStock: 12, minStock: 3, categoryId: dbCategories[1].id },
+    { name: 'selang cannula', sku: 'CON-CAN-001', description: 'Disposable oxygen tube for adults, length 2m', price: 15000.0, cost: 5000.0, currentStock: 100, minStock: 15, categoryId: dbCategories[2].id },
   ];
 
   const dbProducts: any[] = [];
