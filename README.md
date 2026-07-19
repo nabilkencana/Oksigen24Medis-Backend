@@ -44,6 +44,7 @@ erDiagram
     Role ||--o{ User : "memiliki"
     User ||--o{ Rental : "membuat"
     User ||--o{ Sale : "membuat"
+    User ||--o{ CustomerRefill : "membuat"
     User ||--o{ Purchase : "membuat"
     User ||--o{ Expense : "mencatat"
     User ||--o{ Income : "mencatat"
@@ -52,6 +53,7 @@ erDiagram
     
     Customer ||--o{ Rental : "menyewa"
     Customer ||--o{ Sale : "membeli"
+    Customer ||--o{ CustomerRefill : "melakukan isi ulang"
     Customer ||--o{ Cylinder : "memegang (jika disewa)"
     
     Vendor ||--o{ Purchase : "menyuplai"
@@ -70,6 +72,7 @@ erDiagram
     
     Rental ||--o{ RentalItem : "memiliki item"
     Sale ||--o{ SaleItem : "memiliki item"
+    CustomerRefill ||--o{ CustomerRefillItem : "memiliki item"
     Purchase ||--o{ PurchaseItem : "memiliki item"
 
     User {
@@ -80,6 +83,7 @@ erDiagram
         uuid roleId FK "role_id"
         boolean isActive "is_active"
         string refreshTokenHash "refresh_token_hash"
+        string fcmToken "fcm_token"
         datetime createdAt
         datetime updatedAt
         datetime deletedAt
@@ -211,6 +215,30 @@ erDiagram
         datetime createdAt
         datetime updatedAt
     }
+    CustomerRefill {
+        uuid id PK
+        string invoiceNo UK "invoice_no"
+        uuid customerId FK "customer_id"
+        decimal totalAmount "total_amount"
+        decimal amountPaid "amount_paid"
+        string paymentMethod "payment_method"
+        enum status "PAID, UNPAID, PARTIAL"
+        string notes
+        uuid createdById FK "created_by_id"
+        datetime createdAt
+        datetime updatedAt
+        datetime deletedAt
+    }
+    CustomerRefillItem {
+        uuid id PK
+        uuid refillId FK "refill_id"
+        string cylinderSize "cylinder_size"
+        int quantity
+        decimal unitPrice "unit_price"
+        decimal subtotal
+        datetime createdAt
+        datetime updatedAt
+    }
     Purchase {
         uuid id PK
         string invoiceNo UK "invoice_no"
@@ -251,7 +279,7 @@ erDiagram
         datetime date
         string description
         uuid createdById FK "created_by_id"
-        enum referenceType "RENTAL, RETURN, VENDOR_REFILL, SALE, PURCHASE"
+        enum referenceType "RENTAL, RETURN, VENDOR_REFILL, CUSTOMER_REFILL, SALE, PURCHASE"
         uuid referenceId "reference_id"
         datetime createdAt
         datetime updatedAt
@@ -260,7 +288,7 @@ erDiagram
     StockMovement {
         uuid id PK
         enum type "IN, OUT, ADJUSTMENT"
-        enum referenceType "RENTAL, RETURN, VENDOR_REFILL, SALE, PURCHASE"
+        enum referenceType "RENTAL, RETURN, VENDOR_REFILL, CUSTOMER_REFILL, SALE, PURCHASE"
         uuid referenceId "reference_id"
         uuid productId FK "product_id"
         uuid cylinderId FK "cylinder_id"

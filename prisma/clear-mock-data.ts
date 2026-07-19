@@ -34,6 +34,13 @@ async function main() {
     const sales = await tx.sale.deleteMany({});
     console.log(`Deleted ${sales.count} sales.`);
 
+    // 3b. Delete Customer Refills
+    const refillItems = await tx.customerRefillItem.deleteMany({});
+    console.log(`Deleted ${refillItems.count} customer refill items.`);
+
+    const refills = await tx.customerRefill.deleteMany({});
+    console.log(`Deleted ${refills.count} customer refills.`);
+
     // 4. Delete Rentals
     const rentalItems = await tx.rentalItem.deleteMany({});
     console.log(`Deleted ${rentalItems.count} rental items.`);
