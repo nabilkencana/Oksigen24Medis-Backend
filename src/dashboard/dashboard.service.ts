@@ -22,6 +22,9 @@ export class DashboardService {
       vendorCylindersCount,
       allProducts,
       recentMovements,
+      rentedBigCylindersCount,
+      rentedSmallCylindersCount,
+      rentedRegulatorsCount,
     ] = await Promise.all([
       // 1. Today's Revenue
       this.prisma.income.aggregate({
@@ -81,6 +84,41 @@ export class DashboardService {
           product: true,
           cylinder: true,
           createdBy: { select: { fullName: true, email: true } },
+        },
+      }),
+
+      // 8. Rented Big Cylinders (status = RENTED, size = '6m3')
+      this.prisma.cylinder.count({
+        where: {
+          status: CylinderStatus.RENTED,
+          size: '6m3',
+          deletedAt: null,
+        },
+      }),
+
+      // 9. Rented Small Cylinders (status = RENTED, not size 6m3 or PCS, and not reg/trl/acc)
+      this.prisma.cylinder.count({
+        where: {
+          status: CylinderStatus.RENTED,
+          size: { notIn: ['6m3', 'PCS'] },
+          NOT: [
+            { serialNumber: { startsWith: 'REG-' } },
+            { serialNumber: { startsWith: 'TRL-' } },
+            { serialNumber: { startsWith: 'ACC-' } },
+          ],
+          deletedAt: null,
+        },
+      }),
+
+      // 10. Rented Regulators (status = RENTED, serial starts with REG- or size = PCS)
+      this.prisma.cylinder.count({
+        where: {
+          status: CylinderStatus.RENTED,
+          OR: [
+            { serialNumber: { startsWith: 'REG-' } },
+            { size: 'PCS' },
+          ],
+          deletedAt: null,
         },
       }),
     ]);
@@ -146,6 +184,9 @@ export class DashboardService {
       todayRevenue: Number(todayIncomeSum._sum.amount || 0),
       monthlyRevenue: Number(monthlyIncomeSum._sum.amount || 0),
       activeRentals: activeRentalsCount,
+      rentedBigCylinders: rentedBigCylindersCount,
+      rentedSmallCylinders: rentedSmallCylindersCount,
+      rentedRegulators: rentedRegulatorsCount,
       availableCylinders: availableCylindersCount,
       vendorCylinders: vendorCylindersCount,
       lowStockCount: lowStockProducts.length,
