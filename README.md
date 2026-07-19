@@ -378,6 +378,21 @@ npx prisma db seed
 * **Finance**: `finance@medis24.com`
 * **Warehouse**: `warehouse@medis24.com`
 
+### 5. Pembersihan Data untuk Produksi (Production Database Cleanup)
+Jika sistem ingin dipindahkan ke lingkungan produksi dan Anda perlu menghapus data transaksi uji coba/mock tetapi harus mempertahankan transaksi aktif/berjalan milik pelanggan tertentu (seperti **Itsna Nihayatul Fitria** dan **Fitria**), jalankan skrip pembersihan produksi:
+
+```bash
+# Menjalankan pembersihan data transaksi dengan menyisakan data Fitria & Itsna
+npm run db:clean:prod
+```
+
+Skrip ini akan secara otomatis:
+- Menghapus seluruh data pengeluaran (`Expense`), pembelian vendor (`Purchase`/`PurchaseItem`), dan log aktivitas (`ActivityLog`).
+- Menghapus seluruh transaksi penyewaan (`Rental`/`RentalItem`), penjualan (`Sale`/`SaleItem`), isi ulang (`CustomerRefill`/`CustomerRefillItem`), riwayat pergerakan stok (`StockMovement`), dan pendapatan (`Income`) milik pelanggan selain Fitria & Itsna.
+- Mengatur ulang (reset) status tabung oksigen (`Cylinder`) milik pelanggan/vendor lain menjadi `AVAILABLE` (Tersedia) dan menghapus link custodian-nya.
+- Mengatur ulang (reset) saldo (`balance`) seluruh pelanggan lain menjadi `0.00`.
+- Mempertahankan seluruh transaksi, status tabung, dan saldo yang berkaitan dengan pelanggan **Itsna Nihayatul Fitria** dan **Fitria**.
+
 ---
 
 ## 🏃 Menjalankan Aplikasi
