@@ -937,4 +937,47 @@ export class TransactionsService {
       data: { deletedAt: new Date() },
     });
   }
+
+  // ==========================================
+  // SYNC / REPAIR UTILITIES
+  // ==========================================
+
+  /**
+   * Sync cylinder statuses for all active rentals.
+   * Fixes any cylinder that should be RENTED but has incorrect status.
+   */
+  async syncRentalCylinderStatus() {
+    const activeRentals = await this.prisma.rental.findMany({
+      where: { status: 'RENTING', deletedAt: null },
+      include: {
+        items: {
+          include: { cylinder: true },
+        },
+        customer: { select: { id: true } },
+      },
+    });
+
+    let fixedCount = 0;
+    for (const rental of activeRentals) {
+      for (const item of rental.items) {
+        const cyl = item.cylinder;
+        if (cyl && cyl.status !== CylinderStatus.RENTED) {
+          await this.prisma.cylinder.update({
+            where: { id: cyl.id },
+            data: {
+              status: CylinderStatus.RENTED,
+              customerId: rental.customer?.id ?? null,
+            },
+          });
+          fixedCount++;
+        }
+      }
+    }
+
+    return {
+      message: `Sync complete. Fixed ${fixedCount} cylinder(s).`,
+      activeRentals: activeRentals.length,
+      fixedCylinders: fixedCount,
+    };
+  }
 }

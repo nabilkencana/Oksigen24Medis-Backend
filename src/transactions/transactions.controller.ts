@@ -168,4 +168,14 @@ export class TransactionsController {
   deleteRental(@Param('id') id: string) {
     return this.transactionsService.deleteRental(id);
   }
+
+  // ── SYNC / REPAIR ─────────────────────────────────────────────────────────
+
+  @Post('sync/rental-cylinders')
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Sync cylinder statuses for all active rentals (repair utility)' })
+  syncRentalCylinderStatus() {
+    return this.transactionsService.syncRentalCylinderStatus();
+  }
 }
