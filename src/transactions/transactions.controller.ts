@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
   Query,
@@ -135,5 +138,34 @@ export class TransactionsController {
   @ApiOperation({ summary: 'Get paginated stock movement history' })
   findAllStockMovements(@Query() paginationDto: PaginationDto) {
     return this.transactionsService.findAllStockMovements(paginationDto);
+  }
+
+  // ── DELETE ENDPOINTS ─────────────────────────────────────────────────────────
+
+  @Delete('refills/customer/:id')
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Soft-delete a customer refill transaction' })
+  @ApiResponse({ status: 200, description: 'Customer refill deleted (soft).' })
+  deleteCustomerRefill(@Param('id') id: string) {
+    return this.transactionsService.deleteCustomerRefill(id);
+  }
+
+  @Delete('sales/:id')
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Soft-delete a sale transaction' })
+  @ApiResponse({ status: 200, description: 'Sale deleted (soft).' })
+  deleteSale(@Param('id') id: string) {
+    return this.transactionsService.deleteSale(id);
+  }
+
+  @Delete('rentals/:id')
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Soft-delete a rental transaction' })
+  @ApiResponse({ status: 200, description: 'Rental deleted (soft).' })
+  deleteRental(@Param('id') id: string) {
+    return this.transactionsService.deleteRental(id);
   }
 }

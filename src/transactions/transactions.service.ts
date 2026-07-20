@@ -897,4 +897,44 @@ export class TransactionsService {
       },
     };
   }
+
+  // ==========================================
+  // DELETE (SOFT DELETE)
+  // ==========================================
+
+  async deleteCustomerRefill(id: string) {
+    const refill = await this.prisma.customerRefill.findFirst({
+      where: { id, deletedAt: null },
+    });
+    if (!refill) throw new NotFoundException('Customer refill transaction not found');
+
+    return this.prisma.customerRefill.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
+  }
+
+  async deleteSale(id: string) {
+    const sale = await this.prisma.sale.findFirst({
+      where: { id, deletedAt: null },
+    });
+    if (!sale) throw new NotFoundException('Sale transaction not found');
+
+    return this.prisma.sale.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
+  }
+
+  async deleteRental(id: string) {
+    const rental = await this.prisma.rental.findFirst({
+      where: { id, deletedAt: null },
+    });
+    if (!rental) throw new NotFoundException('Rental transaction not found');
+
+    return this.prisma.rental.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
+  }
 }
