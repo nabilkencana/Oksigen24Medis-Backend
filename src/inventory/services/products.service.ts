@@ -43,7 +43,7 @@ export class ProductsService {
   async findAll(paginationDto: PaginationDto) {
     const {
       page = 1,
-      limit = 10,
+      limit = 1000,
       search,
       sortBy = 'name',
       sortOrder = 'asc',

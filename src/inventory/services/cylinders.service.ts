@@ -51,7 +51,7 @@ export class CylindersService {
   async findAll(paginationDto: PaginationDto) {
     const {
       page = 1,
-      limit = 10,
+      limit = 1000,
       search,
       sortBy = 'serialNumber',
       sortOrder = 'asc',
