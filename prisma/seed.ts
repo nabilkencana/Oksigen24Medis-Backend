@@ -109,6 +109,10 @@ async function main() {
     { name: 'Industrial Oxygen 99.0%', purity: 99.00, pressure: 150.00, pricePerUnit: 50000.00, description: 'Industrial grade oxygen for welding & cutting' },
     { name: 'Sewa Regulator', purity: 0.00, pressure: 0.00, pricePerUnit: 75000.00, description: 'Sewa regulator oksigen medis standar' },
     { name: 'Sewa Troli Tabung 1m3', purity: 0.00, pressure: 0.00, pricePerUnit: 20000.00, description: 'Sewa troli besi dorong tabung 1m3' },
+    { name: 'Isi Ulang Tabung Oksigen 1.5m3', purity: 99.50, pressure: 150.00, pricePerUnit: 75000.00, description: 'Isi Ulang Gas Oksigen Medis Tabung 1.5m3' },
+    { name: 'Isi Ulang Tabung Oksigen 2m3', purity: 99.50, pressure: 150.00, pricePerUnit: 75000.00, description: 'Isi Ulang Gas Oksigen Medis Tabung 2m3' },
+    { name: 'Tabung Oksigen 1.5m3', purity: 99.50, pressure: 150.00, pricePerUnit: 75000.00, description: 'Gas Oksigen Medis Tabung 1.5m3' },
+    { name: 'Tabung Oksigen 2m3', purity: 99.50, pressure: 150.00, pricePerUnit: 75000.00, description: 'Gas Oksigen Medis Tabung 2m3' },
   ];
 
   const dbOxygenTypes: any[] = [];
@@ -160,6 +164,7 @@ async function main() {
     { name: 'Regulators', description: 'Oxygen regulators and flowmeters' },
     { name: 'Trolleys & Stands', description: 'Trolleys and stands for oxygen cylinders' },
     { name: 'Consumables', description: 'Nasal cannulas, masks, tubes' },
+    { name: 'Gas', description: 'Gas refill and supply' },
   ];
 
   const dbCategories: any[] = [];
@@ -173,10 +178,14 @@ async function main() {
   }
   console.log('Categories upserted.');
 
+  const gasCat = dbCategories.find((c) => c.name === 'Gas') || dbCategories[0];
+
   const products = [
     { name: 'regulator oksigen', sku: 'REG-NES-001', description: 'Medical grade regulator with humidifier bottle', price: 350000.0, cost: 210000.0, currentStock: 25, minStock: 5, categoryId: dbCategories[0].id },
     { name: 'troly', sku: 'TRL-STL-001', description: 'Heavy duty steel trolley for 1m3 cylinders', price: 180000.0, cost: 110000.0, currentStock: 12, minStock: 3, categoryId: dbCategories[1].id },
     { name: 'selang cannula', sku: 'CON-CAN-001', description: 'Disposable oxygen tube for adults, length 2m', price: 15000.0, cost: 5000.0, currentStock: 100, minStock: 15, categoryId: dbCategories[2].id },
+    { name: 'Refill Tabung 1,5m³', sku: 'RFL-15M3', description: 'Refill isi ulang gas oksigen tabung 1.5m3', price: 75000.0, cost: 40000.0, currentStock: 50, minStock: 5, categoryId: gasCat.id },
+    { name: 'Refill Tabung 2m³', sku: 'RFL-2M3', description: 'Refill isi ulang gas oksigen tabung 2m3', price: 75000.0, cost: 40000.0, currentStock: 50, minStock: 5, categoryId: gasCat.id },
   ];
 
   const dbProducts: any[] = [];
